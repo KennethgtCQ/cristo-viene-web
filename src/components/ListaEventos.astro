@@ -1,0 +1,71 @@
+---
+import { getUpcomingEvents, formatEventParts } from "../lib/firebase";
+
+// Se renderiza en el servidor con los datos disponibles al momento del build
+// (o al momento de la petición si usas modo "server"). Además, el script del
+// cliente vuelve a consultar Firebase para mantener la lista actualizada
+// sin tener que reconstruir el sitio.
+const { events } = await getUpcomingEvents(3);
+const initialItems = events.map(formatEventParts);
+---
+
+<section id="eventos" class="px-6 pb-20 md:pb-28">
+  <div class="mx-auto max-w-4xl">
+    <div class="rounded-block bg-bg-block-secondary p-6 md:p-8">
+      <ul id="events-list" class="flex flex-col">
+        {initialItems.map((item, i) => (
+          <li
+            data-reveal
+            class:list={[
+              "flex items-baseline gap-5 py-5",
+              i !== 0 && "border-t border-text-primary/10",
+            ]}
+          >
+            <div class="text-right shrink-0 w-16">
+              <p class="text-date font-bold leading-none">{item.day}</p>
+              <p class="text-small text-text-secondary uppercase mt-1">{item.month}</p>
+            </div>
+            <div>
+              <p class="text-small uppercase tracking-wide text-text-secondary mb-1">
+                {item.weekday}
+              </p>
+              <p class="text-body-lg font-medium">{item.title}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { getUpcomingEvents, formatEventParts } from "../lib/firebase";
+
+  const list = document.getElementById("events-list");
+
+  async function refreshEvents() {
+    if (!list) return;
+    const { events } = await getUpcomingEvents(3);
+    const items = events.map(formatEventParts);
+
+    list.innerHTML = items
+      .map(
+        (item, i) => `
+        <li class="flex items-baseline gap-5 py-5 ${i !== 0 ? "border-t border-text-primary/10" : ""}">
+          <div class="text-right shrink-0 w-16">
+            <p class="text-date font-bold leading-none">${item.day}</p>
+            <p class="text-small text-text-secondary uppercase mt-1">${item.month}</p>
+          </div>
+          <div>
+            <p class="text-small uppercase tracking-wide text-text-secondary mb-1">${item.weekday}</p>
+            <p class="text-body-lg font-medium">${item.title}</p>
+          </div>
+        </li>`
+      )
+      .join("");
+  }
+
+  // Vuelve a consultar Firebase al cargar en el navegador (datos frescos
+  // aunque el HTML se haya generado en build time).
+  refreshEvents();
+</script>

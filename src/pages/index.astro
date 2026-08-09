@@ -1,17 +1,28 @@
 ---
-
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Hero from "../components/Hero.astro";
+import Galeria from "../components/Galeria.astro";
+import Compromiso from "../components/Compromiso.astro";
+import Esencia from "../components/Esencia.astro";
+import Eventos from "../components/ListaEventos.astro";
+import Ministerios from "../components/Ministerios.astro";
+import Footer from "../components/Footer.astro";
+import BackToTop from "../components/BackToTop.astro";
+import ScrollReveal from "../components/ScrollReveal.astro";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout>
+  <Navbar />
+  <main>
+    <Hero />
+    <Galeria />
+    <Compromiso />
+    <Esencia />
+    <Eventos />
+    <Ministerios />
+  </main>
+  <Footer />
+  <BackToTop />
+  <ScrollReveal />
+</Layout>

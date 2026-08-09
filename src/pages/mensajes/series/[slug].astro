@@ -1,0 +1,64 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import Navbar from "../../../components/Navbar.astro";
+import Footer from "../../../components/Footer.astro";
+import BackToTop from "../../../components/BackToTop.astro";
+import SoundCloudPlayer from "../../../components/SoundCloudPlayer.astro";
+import { getAllSeries, type ResolvedSeries } from "../../../lib/series";
+
+// Genera una página estática por cada serie (ver src/lib/series.ts para
+// agregar una serie nueva — no hay que tocar este archivo).
+export async function getStaticPaths() {
+  const series = await getAllSeries();
+  return series.map((s) => ({
+    params: { slug: s.slug },
+    props: { serie: s },
+  }));
+}
+
+interface Props {
+  serie: ResolvedSeries;
+}
+
+const { serie } = Astro.props;
+---
+
+<Layout title={`${serie.title} — Cristo Viene`}>
+  <Navbar />
+  <main>
+    <section class="px-6 pt-36 pb-10 md:pt-44 md:pb-14">
+      <div class="mx-auto max-w-4xl">
+        <a
+          href="/mensajes/series"
+          class="inline-flex items-center gap-2 text-small text-text-secondary hover:text-accent transition-colors mb-6"
+        >
+          <span aria-hidden="true">&larr;</span> Todas las series
+        </a>
+        <p class="text-eyebrow uppercase tracking-[0.3em] text-text-secondary mb-4">
+          Serie
+        </p>
+        <h1 class="text-h2 font-bold capitalize text-balance mb-3">{serie.title}</h1>
+        {serie.trackCount && (
+          <p class="text-body text-text-secondary">
+            {serie.trackCount} mensajes{serie.year ? ` · ${serie.year}` : ""}
+          </p>
+        )}
+      </div>
+    </section>
+
+    <!-- Reproductor personalizado: portada, play/pausa, progreso y la
+         lista completa de tracks del playlist, todo con nuestros estilos. -->
+    <section class="px-6 pb-24 md:pb-32">
+      <div class="mx-auto max-w-2xl">
+        <SoundCloudPlayer
+          url={serie.soundcloudUrl}
+          title={serie.title}
+          thumbnail={serie.thumbnail}
+          variant="playlist"
+        />
+      </div>
+    </section>
+  </main>
+  <Footer />
+  <BackToTop />
+</Layout>

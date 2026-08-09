@@ -1,0 +1,177 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   1. FUENTE ALLER
+   Coloca los archivos de la fuente en /public/fonts (ver public/fonts/README.md)
+   ========================================================================== */
+@font-face {
+  font-family: "Aller Light";
+  src: url("/fonts/Aller-Light.woff") format("woff");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Aller";
+  src: url("/fonts/Aller_Rg.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Aller Italic";
+  src: url("/fonts/Aller_It.woff") format("woff");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Aller Bold";
+  src: url("/fonts/Aller_Bd.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+  @font-face {
+    font-family: 'Aller Bold Italic';
+      src: url("/fonts/Aller_BdIt.woff") format("woff");
+    font-style: normal;
+    font-weight: normal;
+}
+
+ @font-face {
+    font-family: 'Aller Display';
+      src: url("/fonts/AllerDisplay.woff") format("woff");
+    font-style: normal;
+    font-weight: normal;
+}
+
+ @font-face {
+    font-family: 'Aller Light Italic';
+      src: url("/fonts/Aller_LtIt.woff") format("woff");
+    font-style: normal;
+    font-weight: normal;
+}
+
+/* ==========================================================================
+   2. TOKENS DE COLOR (modo claro por defecto, modo oscuro vía prefers-color-scheme)
+   Estas son las variables "crudas" que cambian según el modo del sistema.
+   ========================================================================== */
+:root {
+  --raw-bg: #ffffff;
+  --raw-bg-block: #f1f1f1;
+  --raw-bg-block-secondary: #e3e3e3;
+  --raw-text-primary: #000000;
+  --raw-text-secondary: #4c4c4c;
+  --raw-accent: #0071bc;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --raw-bg: #121212;
+    --raw-bg-block: #1c1c1c;
+    --raw-bg-block-secondary: #262626;
+    --raw-text-primary: #ffffff;
+    --raw-text-secondary: #787878;
+    --raw-accent: #d8b24b;
+
+    color-scheme: dark;
+  }
+}
+
+/* ==========================================================================
+   3. TEMA DE TAILWIND
+   Mapea los tokens crudos a utilidades de Tailwind: bg-bg, text-accent, text-h1, etc.
+   ========================================================================== */
+@theme {
+  /* Colores */
+  --color-bg: var(--raw-bg);
+  --color-bg-block: var(--raw-bg-block);
+  --color-bg-block-secondary: var(--raw-bg-block-secondary);
+  --color-text-primary: var(--raw-text-primary);
+  --color-text-secondary: var(--raw-text-secondary);
+  --color-accent: var(--raw-accent);
+
+  /* Colores fijos usados en las tarjetas "Nuestra esencia" (no cambian con el tema) */
+  --color-card-fe: #a3576a;
+  --color-card-fe-dark: #7c3f4d;
+  --color-card-relacion: #d98c4a;
+  --color-card-relacion-dark: #8a5a2e;
+  --color-card-equipo: #4a6fa5;
+  --color-card-equipo-dark: #33507a;
+
+  /* Tipografía */
+  --font-sans: "Aller", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* Escala de tamaños de texto (con line-height emparejado) */
+  --text-eyebrow: 0.8125rem;
+  --text-eyebrow--line-height: 1.4;
+  --text-eyebrow--letter-spacing: 0.2em;
+
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.55;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.65;
+
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.6;
+
+  --text-h3: 1.5rem;
+  --text-h3--line-height: 1.3;
+
+  --text-h2: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem);
+  --text-h2--line-height: 1.2;
+
+  --text-hero: clamp(2rem, 1.2rem + 3.5vw, 3.5rem);
+  --text-hero--line-height: 1.12;
+
+  --text-date: 2.25rem;
+  --text-date--line-height: 1;
+
+  /* Radios */
+  --radius-card: 1.75rem;
+  --radius-block: 1.5rem;
+}
+
+/* ==========================================================================
+   4. ESTILOS BASE
+   ========================================================================== */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-bg);
+}
+
+/* Foco visible accesible */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}

@@ -1,0 +1,259 @@
+---
+// Reproductor de SoundCloud 100% personalizado.
+//
+// El iframe de SoundCloud sigue existiendo (es la única forma de reproducir
+// audio de SoundCloud en un navegador), pero queda oculto: solo actúa como
+// "motor" de audio. Lo controlamos con la Widget JavaScript API oficial
+// (https://developers.soundcloud.com/docs/api/html5-widget) y construimos
+// toda la interfaz visible (play/pausa, barra de progreso, lista de tracks)
+// con nuestro propio HTML/CSS — así respeta el diseño del sitio en vez del
+// look nativo de SoundCloud.
+//
+// Funciona igual para un track individual o para un playlist completo
+// (con variant="playlist" se agrega la lista de tracks clickeable).
+
+interface Props {
+  url: string; // URL de un track o de un playlist ("set") de SoundCloud
+  title?: string;
+  thumbnail?: string;
+  variant?: "track" | "playlist";
+  id?: string;
+}
+
+const { url, title, thumbnail, variant = "track", id } = Astro.props;
+---
+
+<div
+  id={id}
+  data-sc-player
+  data-url={url}
+  class="overflow-hidden rounded-card bg-bg-block-secondary"
+>
+  <!-- Motor de audio invisible -->
+  <iframe
+    data-sc-iframe
+    title="Reproductor de audio"
+    src=""
+    allow="autoplay"
+    style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;border:0;"
+  ></iframe>
+
+  <div class="flex items-center gap-4 p-5">
+    <div class="relative h-32 w-32 shrink-0 overflow-hidden rounded-xl bg-bg-block">
+      <img
+        data-sc-artwork
+        src={thumbnail}
+        alt=""
+        class:list={["h-full w-full object-cover", !thumbnail && "hidden"]}
+      />
+    </div>
+
+    <div class="min-w-0 flex-1">
+      <p data-sc-title class="truncate text-body-lg font-bold text-text-primary">
+        {title ?? "Cargando..."}
+      </p>
+
+      <div class="mt-2.5 flex items-center gap-3">
+        <button
+          type="button"
+          data-sc-toggle
+          aria-label="Reproducir"
+          class:list={[
+            "flex shrink-0 items-center justify-center rounded-full bg-accent text-bg transition-transform hover:scale-105",
+            variant === "playlist" ? "h-14 w-14" : "h-9 w-9",
+          ]}
+        >
+          <svg data-sc-icon-play width={variant === "playlist" ? 20 : 14} height={variant === "playlist" ? 20 : 14} viewBox="0 0 20 20" fill="none">
+            <path d="M6 4L16 10L6 16V4Z" fill="currentColor" />
+          </svg>
+          <svg data-sc-icon-pause width={variant === "playlist" ? 20 : 14} height={variant === "playlist" ? 20 : 14} viewBox="0 0 20 20" fill="none" class="hidden">
+            <rect x="5" y="4" width="3.5" height="12" fill="currentColor" />
+            <rect x="11.5" y="4" width="3.5" height="12" fill="currentColor" />
+          </svg>
+        </button>
+
+        <div
+          data-sc-progress-track
+          class="relative h-2 flex-1 min-w-[60px] cursor-pointer rounded-full bg-text-secondary/25"
+        >
+          <div
+            data-sc-progress-fill
+            class="absolute inset-y-0 left-0 w-0 rounded-full bg-accent"
+          ></div>
+        </div>
+
+        <span data-sc-time class="w-10 shrink-0 text-small tabular-nums text-text-secondary">
+          0:00
+        </span>
+      </div>
+    </div>
+  </div>
+
+  {variant === "playlist" && (
+    <ul
+      data-sc-tracklist
+      class="max-h-80 overflow-y-auto divide-y divide-text-primary/10 border-t border-text-primary/10"
+    ></ul>
+  )}
+</div>
+
+<script>
+  declare global {
+    interface Window {
+      SC: any;
+    }
+  }
+
+  function loadSoundCloudSdk(): Promise<void> {
+    return new Promise((resolve) => {
+      if (window.SC) return resolve();
+      const script = document.createElement("script");
+      script.src = "https://w.soundcloud.com/player/api.js";
+      script.onload = () => resolve();
+      document.head.appendChild(script);
+    });
+  }
+
+  function formatTime(ms: number) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  async function initSoundCloudPlayers() {
+    const containers = document.querySelectorAll<HTMLElement>("[data-sc-player]");
+    if (containers.length === 0) return;
+
+    await loadSoundCloudSdk();
+
+    containers.forEach((container) => {
+      // Evita inicializar dos veces el mismo reproductor (ej. navegación de Astro).
+      if (container.dataset.scInitialized === "true") return;
+      container.dataset.scInitialized = "true";
+
+      const url = container.dataset.url;
+      if (!url) return;
+
+      const iframe = container.querySelector<HTMLIFrameElement>("[data-sc-iframe]")!;
+      const params = new URLSearchParams({ url, auto_play: "false" });
+      iframe.src = `https://w.soundcloud.com/player/?${params.toString()}`;
+
+      const widget = window.SC.Widget(iframe);
+
+      const toggleBtn = container.querySelector<HTMLButtonElement>("[data-sc-toggle]")!;
+      const iconPlay = container.querySelector<SVGElement>("[data-sc-icon-play]")!;
+      const iconPause = container.querySelector<SVGElement>("[data-sc-icon-pause]")!;
+      const titleEl = container.querySelector<HTMLElement>("[data-sc-title]");
+      const artworkEl = container.querySelector<HTMLImageElement>("[data-sc-artwork]");
+      const progressTrack = container.querySelector<HTMLElement>("[data-sc-progress-track]")!;
+      const progressFill = container.querySelector<HTMLElement>("[data-sc-progress-fill]")!;
+      const timeEl = container.querySelector<HTMLElement>("[data-sc-time]")!;
+      const trackListEl = container.querySelector<HTMLElement>("[data-sc-tracklist]");
+
+      let duration = 0;
+      let isPlaying = false;
+
+      function setPlayingUI(playing: boolean) {
+        isPlaying = playing;
+        iconPlay.classList.toggle("hidden", playing);
+        iconPause.classList.toggle("hidden", !playing);
+      }
+
+      function highlightActiveTrack(index: number) {
+        trackListEl?.querySelectorAll("[data-sc-track-index]").forEach((el) => {
+          const btn = el as HTMLButtonElement;
+          const active = Number(btn.dataset.scTrackIndex) === index;
+          btn.classList.toggle("text-accent", active);
+          btn.classList.toggle("bg-bg-block", active);
+        });
+      }
+
+      widget.bind(window.SC.Widget.Events.READY, () => {
+        widget.getDuration((d: number) => (duration = d));
+
+        widget.getCurrentSound((sound: any) => {
+          if (sound?.title && titleEl) titleEl.textContent = sound.title;
+          if (sound?.artwork_url && artworkEl) {
+            artworkEl.src = sound.artwork_url.replace("-large", "-t200x200");
+            artworkEl.classList.remove("hidden");
+          }
+        });
+
+        if (trackListEl) {
+          widget.getSounds((sounds: any[]) => {
+            trackListEl.innerHTML = sounds
+              .map(
+                (s, i) => `
+                <li>
+                  <button
+                    type="button"
+                    data-sc-track-index="${i}"
+                    class="flex w-full items-center gap-3 px-5 py-3 text-left text-text-primary transition-colors hover:bg-bg-block"
+                  >
+                    <span class="w-6 shrink-0 text-center text-small tabular-nums text-text-secondary">${i + 1}</span>
+                    <span class="flex-1 truncate text-body">${s.title}</span>
+                  </button>
+                </li>`
+              )
+              .join("");
+
+            trackListEl.querySelectorAll<HTMLButtonElement>("[data-sc-track-index]").forEach((btn) => {
+              btn.addEventListener("click", () => {
+                const index = Number(btn.dataset.scTrackIndex);
+                widget.skip(index);
+                widget.play();
+              });
+            });
+
+            highlightActiveTrack(0);
+          });
+        }
+      });
+
+      widget.bind(window.SC.Widget.Events.PLAY, () => setPlayingUI(true));
+      widget.bind(window.SC.Widget.Events.PAUSE, () => setPlayingUI(false));
+      widget.bind(window.SC.Widget.Events.FINISH, () => setPlayingUI(false));
+
+      widget.bind(window.SC.Widget.Events.PLAY_PROGRESS, (data: { currentPosition: number }) => {
+        if (!duration) return;
+        const pct = Math.min(100, (data.currentPosition / duration) * 100);
+        progressFill.style.width = `${pct}%`;
+        timeEl.textContent = formatTime(data.currentPosition);
+      });
+
+      // Cuando cambia el track activo dentro de un playlist.
+      widget.bind(window.SC.Widget.Events.PLAY, () => {
+        widget.getDuration((d: number) => (duration = d));
+        widget.getCurrentSound((sound: any) => {
+          if (sound?.title && titleEl) titleEl.textContent = sound.title;
+          if (sound?.artwork_url && artworkEl) {
+            artworkEl.src = sound.artwork_url.replace("-large", "-t200x200");
+            artworkEl.classList.remove("hidden");
+          }
+          widget.getCurrentSoundIndex?.((index: number) => highlightActiveTrack(index));
+        });
+      });
+
+      toggleBtn.addEventListener("click", () => {
+        if (isPlaying) widget.pause();
+        else widget.play();
+      });
+
+      progressTrack.addEventListener("click", (e: MouseEvent) => {
+        if (!duration) return;
+        const rect = progressTrack.getBoundingClientRect();
+        const ratio = (e.clientX - rect.left) / rect.width;
+        widget.seekTo(ratio * duration);
+      });
+
+      // Exponemos el botón de play/pausa para que otros scripts de la
+      // página (ej. el botón "Escuchar" en mensajes.astro) puedan
+      // simular un clic sin conocer los detalles internos del widget.
+      container.setAttribute("data-sc-ready", "true");
+    });
+  }
+
+  initSoundCloudPlayers();
+  document.addEventListener("astro:page-load", initSoundCloudPlayers);
+</script>

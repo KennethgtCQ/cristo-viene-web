@@ -1,0 +1,24 @@
+---
+---
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const items = gsap.utils.toArray<HTMLElement>("[data-reveal]");
+
+  items.forEach((el) => {
+    gsap.from(el, {
+      y: 36,
+      opacity: 0,
+      duration: 0.8,
+      ease: "power3.out",
+      scrollTrigger: {
+        trigger: el,
+        start: "top 88%",
+      },
+    });
+  });
+</script>

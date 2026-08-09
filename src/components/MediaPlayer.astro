@@ -1,0 +1,81 @@
+---
+// Dispatcher: YouTube conserva su reproductor nativo (clic para
+// incrustar), como ya lo tenías. SoundCloud ahora usa nuestro reproductor
+// 100% personalizado (SoundCloudPlayer.astro) en vez del widget nativo.
+import type { MediaProvider } from "../lib/messages";
+import SoundCloudPlayer from "./SoundCloudPlayer.astro";
+
+interface Props {
+  provider: MediaProvider;
+  youtubeId?: string;
+  soundcloudUrl?: string;
+  thumbnail?: string;
+  title: string;
+  id?: string;
+}
+
+const { provider, youtubeId, soundcloudUrl, thumbnail, title, id } = Astro.props;
+---
+
+{provider === "soundcloud" && soundcloudUrl ? (
+  <SoundCloudPlayer url={soundcloudUrl} title={title} thumbnail={thumbnail} variant="track" id={id} />
+) : (
+  <div
+    id={id}
+    data-media-container
+    data-provider={provider}
+    data-youtube-id={youtubeId}
+    class="relative aspect-video overflow-hidden rounded-card bg-bg-block-secondary"
+  >
+    {youtubeId ? (
+      <img
+        src={`https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`}
+        alt={title}
+        loading="lazy"
+        class="h-full w-full object-cover"
+      />
+    ) : (
+      <div class="h-full w-full bg-bg-block-secondary" />
+    )}
+
+    <button
+      type="button"
+      data-media-play
+      class="absolute inset-0 flex items-center justify-center"
+      aria-label={`Reproducir: ${title}`}
+    >
+      <span class="absolute inset-0 bg-black/25 transition-opacity hover:bg-black/10" />
+      <span class="relative flex h-16 w-16 items-center justify-center rounded-full bg-accent text-bg shadow-lg transition-transform hover:scale-110">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M6 4L16 10L6 16V4Z" fill="currentColor" />
+        </svg>
+      </span>
+    </button>
+  </div>
+)}
+
+<script>
+  // Solo para YouTube: clic para incrustar el iframe nativo.
+  document.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement)?.closest("[data-media-play]") as HTMLElement | null;
+    if (!btn) return;
+
+    const container = btn.closest("[data-media-container]") as HTMLElement | null;
+    if (!container || container.dataset.provider !== "youtube") return;
+
+    const videoId = container.dataset.youtubeId;
+    if (!videoId) return;
+
+    const iframe = document.createElement("iframe");
+    iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`;
+    iframe.allow =
+      "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+    iframe.allowFullscreen = true;
+    iframe.className = "h-full w-full";
+    iframe.style.border = "0";
+    iframe.loading = "lazy";
+
+    container.innerHTML = "";
+    container.appendChild(iframe);
+  });
+</script>

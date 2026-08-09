@@ -1,0 +1,203 @@
+---
+// Navbar como componente independiente, con submenús (dropdown en desktop,
+// acordeón en mobile) para "Conócenos" y "Ministerios".
+//
+// Los enlaces usan "/#seccion" (con slash inicial) en vez de solo "#seccion"
+// para que funcionen igual desde cualquier página, no solo desde Inicio.
+
+const currentPath = Astro.url.pathname;
+const isHome = currentPath === "/";
+
+const navLinks = [
+  { label: "Inicio", href: "/" },
+  {
+    label: "Conócenos",
+    href: "/#conocenos",
+    submenu: [
+      { label: "Nuestra Historia", href: "/conocenos/historia" },
+      { label: "Nuestra Doctrina", href: "/conocenos/doctrina" },
+    ],
+  },
+  {
+    label: "Ministerios",
+    href: "/#ministerios",
+    submenu: [
+      { label: "Nuevas Generaciones", href: "/ministerios/nuevas-generaciones" },
+      { label: "Discipulado", href: "/ministerios/discipulado" },
+      { label: "Otros", href: "/ministerios/otros" },
+    ],
+  },
+  { label: "Mensajes", href: "/#mensajes" },
+  { label: "Visítanos", href: "/#visitanos" },
+];
+---
+
+<header class="absolute top-0 left-0 right-0 z-50">
+  <div
+    class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-6 md:px-10 md:py-8"
+  >
+    <a href="/" class="flex items-center gap-2 shrink-0" aria-label="Cristo Viene - Inicio">
+      <img src="/src/images/logo.png" alt="Logo de Cristo Viene" class="h-10 w-auto" />
+    </a>
+
+    <!-- Nav desktop -->
+    <nav class="hidden lg:flex items-center gap-9" aria-label="Navegación principal">
+      {navLinks.map((link) => (
+        link.submenu ? (
+          <div class="relative group">
+            <a
+              href={link.href}
+              class:list={[
+                "flex items-center gap-1.5 text-body transition-colors hover:text-accent",
+                "text-text-primary",
+              ]}
+            >
+              {link.label}
+              <svg
+                width="10"
+                height="6"
+                viewBox="0 0 10 6"
+                fill="none"
+                class="mt-0.5 transition-transform duration-200 group-hover:rotate-180 group-focus-within:rotate-180"
+                aria-hidden="true"
+              >
+                <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </a>
+
+            <!-- Submenu (dropdown) -->
+            <div
+              class="invisible absolute left-0 top-full mt-3 w-56 -translate-y-1 bg-bg-block rounded-xl p-2 opacity-0 shadow-xl transition-all duration-150 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100"
+            >
+              {link.submenu.map((item) => (
+                <a
+                  href={item.href}
+                  class="block rounded-md px-3 py-2.5 text-body text-text-primary transition-colors hover:bg-bg-block-secondary hover:text-accent"
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <a
+            href={link.href}
+            class:list={[
+              "text-body transition-colors hover:text-accent",
+              isHome && link.href === "/" ? "text-accent" : "text-text-primary",
+            ]}
+          >
+            {link.label}
+          </a>
+        )
+      ))}
+    </nav>
+
+    <div class="hidden lg:flex items-center gap-7 shrink-0">
+      <a href="/#ofrendar" class="text-body text-text-primary hover:text-accent transition-colors">
+        Ofrendar
+      </a>
+      <a href="/#eventos" class="text-body text-text-primary hover:text-accent transition-colors">
+        Eventos
+      </a>
+    </div>
+
+    <!-- Botón menú móvil -->
+    <button
+      id="menu-toggle"
+      type="button"
+      class="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-full border border-text-secondary/40 text-text-primary"
+      aria-label="Abrir menú"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+    >
+      <svg id="icon-open" width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 1H18M0 7H18M0 13H18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+      </svg>
+      <svg id="icon-close" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" class="hidden">
+        <path d="M1 1L15 15M15 1L1 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Menú móvil -->
+  <nav
+    id="mobile-menu"
+    class="lg:hidden hidden mx-4 mb-4 rounded-block bg-bg-block px-6 py-6 shadow-xl max-h-[75vh] overflow-y-auto"
+    aria-label="Navegación móvil"
+  >
+    <ul class="flex flex-col gap-1">
+      {navLinks.map((link) => (
+        <li>
+          {link.submenu ? (
+            <details class="group/details">
+              <summary class="flex cursor-pointer list-none items-center justify-between py-3 text-body-lg text-text-primary marker:content-none">
+                {link.label}
+                <svg
+                  width="12"
+                  height="7"
+                  viewBox="0 0 10 6"
+                  fill="none"
+                  class="transition-transform duration-200 group-open/details:rotate-180"
+                  aria-hidden="true"
+                >
+                  <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </summary>
+              <div class="flex flex-col gap-1 pb-2 pl-4">
+                <a href={link.href} class="py-2 text-body text-text-secondary hover:text-accent">
+                  Ver sección completa
+                </a>
+                {link.submenu.map((item) => (
+                  <a href={item.href} class="py-2 text-body text-text-primary hover:text-accent">
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            </details>
+          ) : (
+            <a
+              href={link.href}
+              class:list={[
+                "block py-3 text-body-lg",
+                isHome && link.href === "/" ? "text-accent" : "text-text-primary",
+              ]}
+            >
+              {link.label}
+            </a>
+          )}
+        </li>
+      ))}
+      <li class="pt-3 mt-3 border-t border-text-secondary/20 flex gap-6">
+        <a href="/#ofrendar" class="text-body text-text-primary">Ofrendar</a>
+        <a href="/#eventos" class="text-body text-text-primary">Eventos</a>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<script>
+  const toggle = document.getElementById("menu-toggle");
+  const menu = document.getElementById("mobile-menu");
+  const iconOpen = document.getElementById("icon-open");
+  const iconClose = document.getElementById("icon-close");
+
+  toggle?.addEventListener("click", () => {
+    const isOpen = menu?.classList.contains("hidden") === false;
+    menu?.classList.toggle("hidden");
+    iconOpen?.classList.toggle("hidden");
+    iconClose?.classList.toggle("hidden");
+    toggle.setAttribute("aria-expanded", String(!isOpen));
+  });
+
+  // Solo cierra el menú al hacer clic en enlaces reales (no en los
+  // <summary> que abren/cierran los submenús tipo acordeón).
+  menu?.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      menu.classList.add("hidden");
+      iconOpen?.classList.remove("hidden");
+      iconClose?.classList.add("hidden");
+      toggle?.setAttribute("aria-expanded", "false");
+    });
+  });
+</script>

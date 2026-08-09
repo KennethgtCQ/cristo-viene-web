@@ -1,0 +1,59 @@
+---
+const year = new Date().getFullYear();
+
+const columns = [
+  {
+    title: "Explorar",
+    links: [
+      { label: "Inicio", href: "#inicio" },
+      { label: "Conócenos", href: "#conocenos" },
+      { label: "Ministerios", href: "#ministerios" },
+      { label: "Mensajes", href: "#mensajes" },
+    ],
+  },
+  {
+    title: "Visítanos",
+    links: [
+      { label: "Ubicación", href: "#visitanos" },
+      { label: "Horarios de servicio", href: "#visitanos" },
+      { label: "Eventos", href: "#eventos" },
+      { label: "Ofrendar", href: "#ofrendar" },
+    ],
+  },
+];
+---
+
+<footer id="visitanos" class="px-6 pt-16 pb-10 bg-bg-block-secondary">
+  <div class="mx-auto max-w-6xl">
+    <div class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr] gap-10 md:gap-8">
+      <div>
+        <div class="flex items-center gap-2 mb-4">
+          <img src="../../src/images/logo.png" alt="Cristo Viene" class="h-12 w-auto" />
+        </div>
+        <p class="text-body text-text-secondary max-w-xs">
+          Trabajamos para dar a conocer a Jesús y enseñar la vida que Él quiere que vivamos.
+        </p>
+      </div>
+
+      {columns.map((col) => (
+        <div>
+          <p class="text-small uppercase tracking-wide text-text-secondary mb-4">{col.title}</p>
+          <ul class="flex flex-col gap-3">
+            {col.links.map((link) => (
+              <li>
+                <a href={link.href} class="text-body hover:text-accent transition-colors">
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+
+    <div class="mt-14 pt-6 border-t border-text-primary/10 flex flex-col md:flex-row items-center justify-between gap-4 text-small text-text-secondary">
+      <p>&copy; {year} Cristo Viene. Todos los derechos reservados.</p>
+      <p>Hecho con fe y dedicación.</p>
+    </div>
+  </div>
+</footer>

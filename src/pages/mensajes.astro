@@ -1,0 +1,167 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import BackToTop from "../components/BackToTop.astro";
+import ScrollReveal from "../components/ScrollReveal.astro";
+import MediaPlayer from "../components/MediaPlayer.astro";
+import { getFeaturedMessage } from "../lib/messages";
+import { getAllSeries } from "../lib/series";
+
+const featured = await getFeaturedMessage();
+const series = await getAllSeries();
+const previewSeries = series.slice(0, 3);
+---
+
+<Layout title="Mensajes — Cristo Viene">
+  <Navbar />
+  <main>
+    <!-- Hero -->
+    <section class="px-6 pt-36 pb-14 md:pt-44 md:pb-16">
+      <div class="mx-auto max-w-6xl flex flex-col md:flex-row md:items-end md:justify-between gap-8">
+        <div>
+          <p class="text-eyebrow uppercase tracking-[0.3em] text-text-secondary mb-4">
+            Mensajes
+          </p>
+          <h1 class="text-hero font-bold text-balance max-w-xl">
+            Escucha la palabra que <span class="text-accent">transforma</span>
+          </h1>
+        </div>
+        <p class="text-body text-text-secondary max-w-sm md:pb-2">
+          Encuentra aquí todas nuestras predicaciones, series y mensajes.
+          Deja que la Palabra de Dios renueve tu vida y te guíe cada día.
+        </p>
+      </div>
+    </section>
+
+    <!-- Destacado: el track más reciente del playlist más reciente -->
+    {featured && (
+      <section class="px-6 pb-20 md:pb-28">
+        <div class="mx-auto max-w-6xl">
+          <p class="text-eyebrow uppercase tracking-[0.3em] text-text-secondary mb-6 flex items-center gap-3">
+            Destacado <span class="h-px w-10 bg-text-secondary/40 inline-block"></span>
+          </p>
+
+          <div data-reveal class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-14 items-center">
+            <MediaPlayer
+              id="featured-player"
+              provider={featured.provider}
+              youtubeId={featured.youtubeId}
+              soundcloudUrl={featured.soundcloudUrl}
+              title={featured.title}
+            />
+
+            <div>
+              <p class="text-eyebrow uppercase tracking-[0.25em] text-text-secondary mb-3">
+                Último mensaje
+              </p>
+              <h2 class="text-h2 font-bold mb-4 text-balance">{featured.title}</h2>
+              <p class="text-small text-text-secondary mb-5">
+                Serie: {featured.series}
+                {featured.pastor && <> &nbsp;|&nbsp; {featured.pastor}</>}
+              </p>
+              {featured.description && (
+                <p class="text-body text-text-secondary mb-7 max-w-md">
+                  {featured.description}
+                </p>
+              )}
+              <a
+                href="#featured-player"
+                data-scroll-to-player
+                class="inline-flex items-center rounded-full bg-accent px-7 py-3 text-small font-semibold uppercase tracking-wide text-bg transition-transform hover:scale-[1.03]"
+              >
+                Escuchar
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    )}
+
+    <!-- Preview de series (las últimas 3; el buscador y el listado completo
+         viven en /mensajes/series) -->
+    <section class="px-6 pb-24 md:pb-32">
+      <div class="mx-auto max-w-6xl">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="text-h3 font-bold">Series Recientes</h2>
+          <a
+            href="/mensajes/series"
+            class="inline-flex items-center gap-2 text-body text-accent hover:opacity-80 transition-opacity"
+          >
+            Ver todas <span aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {previewSeries.map((serie) => (
+            <a
+              href={`/mensajes/series/${serie.slug}`}
+              data-reveal
+              class="group block overflow-hidden rounded-card bg-bg-block transition-transform hover:-translate-y-1"
+            >
+              <div
+                class="aspect-[16/10] bg-bg-block-secondary bg-cover bg-center"
+                style={serie.thumbnail ? `background-image:url(${serie.thumbnail})` : undefined}
+              ></div>
+              <div class="p-5">
+                <h3 class="text-body-lg font-bold mb-1 capitalize group-hover:text-accent transition-colors">
+                  {serie.title}
+                </h3>
+                {serie.trackCount && (
+                  <p class="text-small text-text-secondary mb-3">
+                    {serie.trackCount} mensajes
+                  </p>
+                )}
+                <div class="flex items-center justify-between">
+                  {serie.year ? (
+                    <span class="flex items-center gap-1.5 text-small text-text-secondary">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5" />
+                        <path d="M3 10H21M8 3V6M16 3V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                      </svg>
+                      {serie.year}
+                    </span>
+                  ) : <span />}
+                  <span class="flex h-8 w-8 items-center justify-center rounded-full bg-bg-block-secondary text-accent">
+                    <svg width="12" height="12" viewBox="0 0 20 20" fill="none">
+                      <path d="M6 4L16 10L6 16V4Z" fill="currentColor" />
+                    </svg>
+                  </span>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+  <BackToTop />
+  <ScrollReveal />
+</Layout>
+
+<script>
+  // El botón "Escuchar" hace scroll hasta el reproductor destacado y,
+  // además, dispara su reproducción automáticamente.
+  document.querySelectorAll("[data-scroll-to-player]").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      const href = link.getAttribute("href");
+      if (!href?.startsWith("#")) return;
+
+      const target = document.querySelector(href);
+      if (!target) return;
+
+      e.preventDefault();
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      // El botón de play puede ser el de YouTube (data-media-play) o el
+      // de nuestro reproductor personalizado de SoundCloud (data-sc-toggle).
+      window.setTimeout(() => {
+        const playBtn = target.querySelector(
+          "[data-media-play], [data-sc-toggle]"
+        ) as HTMLElement | null;
+        playBtn?.click();
+      }, 400);
+    });
+  });
+</script>

@@ -1,0 +1,175 @@
+---
+// Reemplaza cada "src: null" por la ruta real de tu foto cuando la tengas,
+// por ejemplo: src: "/images/galeria-1.jpg" (colócala en /public/images).
+// Mientras "src" sea null, se muestra un bloque de color de relleno para
+// que el layout se vea correcto sin depender de imágenes externas.
+const images = [
+  { src: null, alt: "Comunidad de la iglesia sonriendo juntos", offset: "up" },
+  { src: null, alt: "Familia visitando la iglesia", offset: "down" },
+  { src: null, alt: "Personas orando juntas", offset: "mid" },
+  { src: null, alt: "Congregación en tiempo de adoración", offset: "down" },
+  { src: null, alt: "Niños jugando en el ministerio infantil", offset: "up" },
+];
+
+const offsetClass: Record<string, string> = {
+  up: "md:mt-0",
+  down: "md:mt-16",
+  mid: "md:mt-8",
+};
+---
+
+<section
+  class="px-6 pb-24 md:pb-32"
+  aria-label="Galería de fotos de la comunidad"
+>
+  <div class="mx-auto max-w-7xl">
+    <!-- Mosaico desktop -->
+    <div
+      data-gallery
+      class="hidden md:flex items-start justify-center gap-5 lg:gap-6"
+    >
+      {
+        images.map((img, i) => (
+          <div
+            data-gallery-item-desktop
+            class:list={[
+              "overflow-hidden rounded-card shrink-0 w-[19%] aspect-[5/9] bg-bg-block",
+              offsetClass[img.offset],
+            ]}
+            style={`transition-delay:${i * 60}ms`}
+          >
+            {img.src ? (
+              <img
+                src={img.src}
+                alt={img.alt}
+                loading="lazy"
+                class="h-full w-full object-cover"
+                width="500"
+                height="900"
+              />
+            ) : (
+              <div
+                class="flex h-full w-full items-center justify-center bg-bg-block-secondary"
+                role="img"
+                aria-label={img.alt}
+              >
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  class="text-text-secondary/50"
+                >
+                  <rect
+                    x="3"
+                    y="5"
+                    width="18"
+                    height="14"
+                    rx="2"
+                    stroke="currentColor"
+                    stroke-width="1.4"
+                  />
+                  <circle cx="8.5" cy="10" r="1.5" fill="currentColor" />
+                  <path
+                    d="M21 16l-5.5-5.5L8 18"
+                    stroke="currentColor"
+                    stroke-width="1.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+            )}
+          </div>
+        ))
+      }
+    </div>
+
+    <!-- Carrusel móvil -->
+    <div
+      class="flex md:hidden gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-6 px-6"
+    >
+      {
+        images.map((img) => (
+          <div
+            data-gallery-item-mobile
+            class="snap-start shrink-0 w-[62%] aspect-[5/9] overflow-hidden rounded-card bg-bg-block"
+          >
+            {img.src ? (
+              <img
+                src={img.src}
+                alt={img.alt}
+                loading="lazy"
+                class="h-full w-full object-cover"
+                width="500"
+                height="900"
+              />
+            ) : (
+              <div
+                class="flex h-full w-full items-center justify-center bg-bg-block-secondary"
+                role="img"
+                aria-label={img.alt}
+              >
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  class="text-text-secondary/50"
+                >
+                  <rect
+                    x="3"
+                    y="5"
+                    width="18"
+                    height="14"
+                    rx="2"
+                    stroke="currentColor"
+                    stroke-width="1.4"
+                  />
+                  <circle cx="8.5" cy="10" r="1.5" fill="currentColor" />
+                  <path
+                    d="M21 16l-5.5-5.5L8 18"
+                    stroke="currentColor"
+                    stroke-width="1.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+            )}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
+
+const gallery = document.querySelector("[data-gallery-section]");
+
+const cards = gsap.utils.toArray("[data-gallery-item-desktop]");
+
+const tl = gsap.timeline({
+
+    scrollTrigger:{
+
+        trigger:gallery,
+
+        start:"top 80%",
+
+        end:"bottom top",
+
+        scrub:1.5
+
+    }
+
+});
+
+  
+  ScrollTrigger.refresh();
+</script>
