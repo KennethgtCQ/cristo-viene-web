@@ -1,40 +1,36 @@
 ---
+// Para agregar las imágenes (logos) de cada ministerio, pon el archivo en
+// /public/images/ministerios/ y escribe su ruta en "image", por ejemplo:
+//   image: "/images/ministerios/nuevas-generaciones.png"
+// Mientras "image" esté vacío, se muestra un recuadro de relleno para que
+// el layout se vea bien.
 const ministries = [
   {
     title: "Nuevas Generaciones",
-    text: "Un espacio pensado para niños y jóvenes, donde aprenden de la Palabra de Dios de forma dinámica y acorde a su edad, mientras crecen en comunidad y se divierten sirviendo a Jesús.",
-    layout: "graphic-left",
-    color: "#FEE8BA",
-    url: "/ministerios/nuevas-generaciones",
-    icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />'
+    text: "Un espacio pensado para niños y jóvenes, donde aprenden de la Palabra de Dios de forma dinámica y acorde a su edad, mientras crecen en comunidad.",
+    image: "",
+    href: "/ministerios/nuevas-generaciones",
+    align: "left",
   },
   {
     title: "Discipulado",
     text: "Acompañamos el crecimiento espiritual de cada persona a través de grupos pequeños, mentorías y estudios bíblicos que fortalecen su caminar con Dios.",
-    layout: "graphic-right",
-    color: "#D7E7FD",
-    url: "/ministerios/discipulado",
-    icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m-7.5 0v7.5m0-7.5V4.5" />'
+    image: "",
+    href: "/ministerios/discipulado",
+    align: "right",
   },
   {
     title: "Otros",
-    text: "Diversos ministerios de servicio, música, oración y alcance comunitario donde cada persona puede encontrar un lugar para poner sus dones al servicio de los demás.",
-    layout: "graphic-left",
-    color: "#CBF1E0",
-    url: "/ministerios/otros",
-    icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />'
-  }
+    text: "Diversos ministerios de servicio, música, oración y alcance comunitario donde cada persona puede poner sus dones al servicio de los demás.",
+    image: "",
+    href: "/ministerios/otros",
+    align: "left",
+  },
 ];
 ---
 
-<style is:global>
-  :root {
-    --ease-smooth: linear(0, .49 7.4%, .864 15.3%, 1.005 19.4%, 1.12 23.7%, 1.206 28.1%, 1.267 32.8%, 1.296 36.4%, 1.311 40.2%, 1.313 44.2%, 1.301 48.6%, 1.252 56.9%, 1.105 74.4%, 1.048 82.5%, 1.011 91.1%, 1);
-  }
-</style>
-
 <section id="ministerios" class="px-6 py-20 md:py-28">
-  <div class="mx-auto max-w-6xl">
+  <div class="mx-auto max-w-5xl">
     <div class="text-center mb-14 md:mb-20">
       <p class="text-eyebrow uppercase tracking-[0.3em] text-text-secondary mb-4">
         Nuestros ministerios
@@ -45,117 +41,44 @@ const ministries = [
     </div>
 
     <div class="flex flex-col gap-6">
-      {ministries.map((m, i) => (
-        <a 
-          href={m.url}
-          data-astro-transition="slide"
+      {ministries.map((m) => (
+        <div
           data-reveal
           class:list={[
-            "group relative block w-full md:w-[85%] rounded-block bg-bg-block p-8 md:p-10 no-underline",
-            "transition-all duration-500",
-            "hover:scale-[1.01] hover:shadow-lg",
-            m.layout === "graphic-right" ? "md:ml-auto" : "md:mr-auto",
+            "w-full md:w-[71%] rounded-block bg-bg-block px-8 py-10 md:px-10 md:py-14",
+            m.align === "right" ? "md:ml-auto" : "md:mr-auto",
           ]}
-          style="transition-timing-function: var(--ease-smooth);"
         >
-          <div
-            class:list={[
-              "flex flex-col md:flex-row items-center gap-8 md:gap-14",
-              m.layout === "graphic-right" && "md:flex-row-reverse",
-            ]}
-          >
-            <!-- SECCIÓN GRÁFICA: BURBUJAS 3D CON EFECTO SMOOTH INDIVIDUAL -->
-            <div class="shrink-0 relative w-[190px] h-[190px] md:w-[210px] md:h-[200px]" aria-hidden="true">
-              
-              <!-- Burbuja pequeña superior izquierda -->
-              <div 
-                 class="absolute top-1 left-0 flex h-[46px] w-[46px] md:h-[52px] md:w-[52px] items-center justify-center rounded-full border border-white/30 transition-all duration-500 hover:scale-110"
-                 style={`
-                   background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), ${m.color} 80%, ${m.color}CC);
-                   backdrop-filter: blur(12px);
-                   box-shadow: 
-                     inset 0 -4px 8px rgba(0,0,0,0.05),
-                     inset 4px 4px 12px rgba(255,255,255,0.9),
-                     0 4px 12px ${m.color}40;
-                   transition-timing-function: var(--ease-smooth);
-                 `}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" stroke-width="2" set:html={m.icon} />
-              </div>
-
-              <!-- Burbuja pequeña superior derecha -->
-              <div 
-                 class="absolute top-4 right-2 md:top-4 md:right-4 flex h-[38px] w-[38px] md:h-[44px] md:w-[44px] items-center justify-center rounded-full border border-white/30 transition-all duration-500 hover:scale-110"
-                 style={`
-                   background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), ${m.color} 80%, ${m.color}CC);
-                   backdrop-filter: blur(12px);
-                   box-shadow: 
-                     inset 0 -4px 8px rgba(0,0,0,0.05),
-                     inset 4px 4px 12px rgba(255,255,255,0.9),
-                     0 4px 12px ${m.color}40;
-                   transition-timing-function: var(--ease-smooth);
-                 `}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" stroke-width="2" set:html={m.icon} />
-              </div>
-
-              <!-- Burbuja pequeña inferior izquierda -->
-              <div 
-                 class="absolute bottom-2 left-2 md:bottom-4 md:left-6 flex h-[38px] w-[38px] md:h-[44px] md:w-[44px] items-center justify-center rounded-full border border-white/30 transition-all duration-500 hover:scale-110"
-                 style={`
-                   background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), ${m.color} 80%, ${m.color}CC);
-                   backdrop-filter: blur(12px);
-                   box-shadow: 
-                     inset 0 -4px 8px rgba(0,0,0,0.05),
-                     inset 4px 4px 12px rgba(255,255,255,0.9),
-                     0 4px 12px ${m.color}40;
-                   transition-timing-function: var(--ease-smooth);
-                 `}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" stroke-width="2" set:html={m.icon} />
-              </div>
-
-              <!-- Burbuja pequeña inferior derecha -->
-              <div 
-                 class="absolute bottom-6 right-0 md:bottom-8 md:right-2 flex h-[42px] w-[42px] md:h-[48px] md:w-[48px] items-center justify-center rounded-full border border-white/30 transition-all duration-500 hover:scale-110"
-                 style={`
-                   background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), ${m.color} 80%, ${m.color}CC);
-                   backdrop-filter: blur(12px);
-                   box-shadow: 
-                     inset 0 -4px 8px rgba(0,0,0,0.05),
-                     inset 4px 4px 12px rgba(255,255,255,0.9),
-                     0 4px 12px ${m.color}40;
-                   transition-timing-function: var(--ease-smooth);
-                 `}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.5)" stroke-width="2" set:html={m.icon} />
-              </div>
-
-              <!-- Burbuja GRANDE central -->
-              <div 
-                 class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex h-[112px] w-[112px] md:h-[124px] md:w-[124px] items-center justify-center rounded-full z-10 border-2 border-white/40 transition-all duration-500 hover:scale-105 hover:shadow-2xl"
-                 style={`
-                   background: radial-gradient(circle at 25% 25%, rgba(255,255,255,0.9), ${m.color} 75%, ${m.color} 100%);
-                   backdrop-filter: blur(16px);
-                   box-shadow: 
-                     inset 0 -12px 24px rgba(0,0,0,0.15),
-                     inset 12px 12px 32px rgba(255,255,255,0.8),
-                     0 8px 32px ${m.color}60;
-                   transition-timing-function: var(--ease-smooth);
-                 `}>
-                <div class="flex flex-col items-center transition-transform duration-500 hover:scale-105" style="transition-timing-function: var(--ease-smooth);">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.6)" stroke-width="2" set:html={m.icon} />
-                  <span class="mt-1.5 text-[10px] md:text-[11px] font-bold text-gray-800 text-center leading-tight max-w-[80px]">
-                    {m.title}
-                  </span>
+          <div class="grid grid-cols-1 md:grid-cols-[2fr_3fr] items-center gap-6 md:gap-10">
+            <!-- Imagen / logo -->
+            <div class="flex items-center justify-center">
+              {m.image ? (
+                <img
+                  src={m.image}
+                  alt={`Logo de ${m.title}`}
+                  loading="lazy"
+                  class="max-h-24 w-auto max-w-full object-contain"
+                />
+              ) : (
+                <div class="flex h-24 w-full items-center justify-center rounded-xl border border-dashed border-text-secondary/40 text-small text-text-secondary">
+                  Logo
                 </div>
-              </div>
-
+              )}
             </div>
-            
-            <!-- TEXTO DEL MINISTERIO -->
-            <div class:list={["max-w-md", m.layout === "graphic-right" ? "md:text-left" : ""]}>
-              <h3 class="text-h3 font-bold mb-3 text-text-primary">{m.title}</h3>
-              <p class="text-body text-text-secondary">{m.text}</p>
+
+            <!-- Texto -->
+            <div>
+              <h3 class="text-h3 mb-3">{m.title}</h3>
+              <p class="text-small text-text-primary max-w-xs">{m.text}</p>
+              <a
+                href={m.href}
+                class="mt-5 inline-block text-small text-accent transition-opacity hover:opacity-80"
+              >
+                Ver más
+              </a>
             </div>
           </div>
-        </a>
+        </div>
       ))}
     </div>
   </div>
