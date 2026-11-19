@@ -35,12 +35,16 @@
 <script>
   import { gsap } from "gsap";
 
-  gsap.from("[data-hero-item]", {
-    y: 28,
-    opacity: 0,
-    duration: 0.9,
-    ease: "power3.out",
-    stagger: 0.12,
-    delay: 0.15,
+  document.addEventListener("astro:page-load", () => {
+    if (!document.querySelector("[data-hero-item]")) return;
+
+    gsap.from("[data-hero-item]", {
+      y: 28,
+      opacity: 0,
+      duration: 0.9,
+      ease: "power3.out",
+      stagger: 0.12,
+      delay: 0.15,
+    });
   });
 </script>

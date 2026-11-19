@@ -141,27 +141,27 @@ const previewSeries = series.slice(0, 3);
 </Layout>
 
 <script>
-  // El botón "Escuchar" hace scroll hasta el reproductor destacado y,
-  // además, dispara su reproducción automáticamente.
-  document.querySelectorAll("[data-scroll-to-player]").forEach((link) => {
-    link.addEventListener("click", (e) => {
-      const href = link.getAttribute("href");
-      if (!href?.startsWith("#")) return;
+  document.addEventListener("astro:page-load", () => {
+    // El botón "Escuchar" hace scroll hasta el reproductor destacado y,
+    // además, dispara su reproducción automáticamente.
+    document.querySelectorAll("[data-scroll-to-player]").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        const href = link.getAttribute("href");
+        if (!href?.startsWith("#")) return;
 
-      const target = document.querySelector(href);
-      if (!target) return;
+        const target = document.querySelector(href);
+        if (!target) return;
 
-      e.preventDefault();
-      target.scrollIntoView({ behavior: "smooth", block: "center" });
+        e.preventDefault();
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
 
-      // El botón de play puede ser el de YouTube (data-media-play) o el
-      // de nuestro reproductor personalizado de SoundCloud (data-sc-toggle).
-      window.setTimeout(() => {
-        const playBtn = target.querySelector(
-          "[data-media-play], [data-sc-toggle]"
-        ) as HTMLElement | null;
-        playBtn?.click();
-      }, 400);
+        window.setTimeout(() => {
+          const playBtn = target.querySelector(
+            "[data-media-play], [data-sc-toggle]"
+          ) as HTMLElement | null;
+          playBtn?.click();
+        }, 400);
+      });
     });
   });
 </script>

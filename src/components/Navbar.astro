@@ -177,27 +177,32 @@ const navLinks = [
 </header>
 
 <script>
-  const toggle = document.getElementById("menu-toggle");
-  const menu = document.getElementById("mobile-menu");
-  const iconOpen = document.getElementById("icon-open");
-  const iconClose = document.getElementById("icon-close");
+  function initNavbar() {
+    const toggle = document.getElementById("menu-toggle");
+    const menu = document.getElementById("mobile-menu");
+    const iconOpen = document.getElementById("icon-open");
+    const iconClose = document.getElementById("icon-close");
+    if (!toggle || !menu) return;
 
-  toggle?.addEventListener("click", () => {
-    const isOpen = menu?.classList.contains("hidden") === false;
-    menu?.classList.toggle("hidden");
-    iconOpen?.classList.toggle("hidden");
-    iconClose?.classList.toggle("hidden");
-    toggle.setAttribute("aria-expanded", String(!isOpen));
-  });
-
-  // Solo cierra el menú al hacer clic en enlaces reales (no en los
-  // <summary> que abren/cierran los submenús tipo acordeón).
-  menu?.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => {
-      menu.classList.add("hidden");
-      iconOpen?.classList.remove("hidden");
-      iconClose?.classList.add("hidden");
-      toggle?.setAttribute("aria-expanded", "false");
+    toggle.addEventListener("click", () => {
+      const isOpen = !menu.classList.contains("hidden");
+      menu.classList.toggle("hidden");
+      iconOpen?.classList.toggle("hidden");
+      iconClose?.classList.toggle("hidden");
+      toggle.setAttribute("aria-expanded", String(!isOpen));
     });
-  });
+
+    // Solo cierra el menú al hacer clic en enlaces reales (no en los
+    // <summary> que abren/cierran los submenús tipo acordeón).
+    menu.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        menu.classList.add("hidden");
+        iconOpen?.classList.remove("hidden");
+        iconClose?.classList.add("hidden");
+        toggle.setAttribute("aria-expanded", "false");
+      });
+    });
+  }
+
+  document.addEventListener("astro:page-load", initNavbar);
 </script>

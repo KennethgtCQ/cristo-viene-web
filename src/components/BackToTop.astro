@@ -13,20 +13,24 @@
 </button>
 
 <script>
-  const btn = document.getElementById("back-to-top");
-
-  const toggleVisibility = () => {
+  // El listener de scroll se registra una sola vez (los scripts no se
+  // re-ejecutan al navegar) y busca el botón en cada evento, porque el
+  // botón se reemplaza en cada navegación.
+  function toggleVisibility() {
+    const btn = document.getElementById("back-to-top");
     if (!btn) return;
     const show = window.scrollY > 600;
     btn.classList.toggle("opacity-0", !show);
     btn.classList.toggle("pointer-events-none", !show);
     btn.classList.toggle("translate-y-3", !show);
-  };
+  }
 
   window.addEventListener("scroll", toggleVisibility, { passive: true });
-  toggleVisibility();
 
-  btn?.addEventListener("click", () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  document.addEventListener("astro:page-load", () => {
+    toggleVisibility();
+    document.getElementById("back-to-top")?.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
   });
 </script>

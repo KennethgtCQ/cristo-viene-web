@@ -146,30 +146,50 @@ const offsetClass: Record<string, string> = {
 
 <script>
   import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(ScrollTrigger);
 
-const gallery = document.querySelector("[data-gallery-section]");
+  let mm: gsap.MatchMedia | undefined;
 
-const cards = gsap.utils.toArray("[data-gallery-item-desktop]");
+  document.addEventListener("astro:page-load", () => {
+    if (!document.querySelector("[data-gallery-item-desktop]")) return;
 
-const tl = gsap.timeline({
+    mm?.revert();
+    mm = gsap.matchMedia();
 
-    scrollTrigger:{
+    mm.add("(min-width: 768px)", () => {
+      gsap.from("[data-gallery-item-desktop]", {
+        y: 50,
+        opacity: 0,
+        duration: 0.8,
+        ease: "power3.out",
+        stagger: 0.1,
+        scrollTrigger: {
+          trigger: "[data-gallery-item-desktop]",
+          start: "top 85%",
+        },
+      });
+    });
 
-        trigger:gallery,
+    mm.add("(max-width: 767px)", () => {
+      gsap.from("[data-gallery-item-mobile]", {
+        y: 30,
+        opacity: 0,
+        duration: 0.6,
+        ease: "power3.out",
+        stagger: 0.08,
+        scrollTrigger: {
+          trigger: "[data-gallery-item-mobile]",
+          start: "top 90%",
+        },
+      });
+    });
+  });
 
-        start:"top 80%",
-
-        end:"bottom top",
-
-        scrub:1.5
-
-    }
-
-});
-
-  
-  ScrollTrigger.refresh();
+  // Antes de cambiar de página, limpia las animaciones de la página que se va.
+  document.addEventListener("astro:before-swap", () => {
+    mm?.revert();
+    mm = undefined;
+  });
 </script>

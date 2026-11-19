@@ -91,28 +91,34 @@ const years = [...new Set(series.map((s) => s.year).filter(Boolean))].sort(
 </Layout>
 
 <script>
-  const searchInput = document.getElementById("series-search") as HTMLInputElement | null;
-  const yearFilter = document.getElementById("series-year-filter") as HTMLSelectElement | null;
-  const cards = Array.from(document.querySelectorAll<HTMLElement>("[data-series-card]"));
-  const emptyState = document.getElementById("series-empty-state");
+  function initSeriesFilters() {
+    const searchInput = document.getElementById("series-search") as HTMLInputElement | null;
+    const yearFilter = document.getElementById("series-year-filter") as HTMLSelectElement | null;
+    const cards = Array.from(document.querySelectorAll<HTMLElement>("[data-series-card]"));
+    const emptyState = document.getElementById("series-empty-state");
 
-  function applyFilters() {
-    const query = searchInput?.value.trim().toLowerCase() ?? "";
-    const year = yearFilter?.value ?? "";
+    if (!searchInput && !yearFilter) return;
 
-    let visibleCount = 0;
+    function applyFilters() {
+      const query = searchInput?.value.trim().toLowerCase() ?? "";
+      const year = yearFilter?.value ?? "";
 
-    cards.forEach((card) => {
-      const matchesQuery = !query || card.dataset.title?.includes(query);
-      const matchesYear = !year || card.dataset.year === year;
-      const visible = matchesQuery && matchesYear;
-      card.classList.toggle("hidden", !visible);
-      if (visible) visibleCount++;
-    });
+      let visibleCount = 0;
 
-    emptyState?.classList.toggle("hidden", visibleCount > 0);
+      cards.forEach((card) => {
+        const matchesQuery = !query || card.dataset.title?.includes(query);
+        const matchesYear = !year || card.dataset.year === year;
+        const visible = matchesQuery && matchesYear;
+        card.classList.toggle("hidden", !visible);
+        if (visible) visibleCount++;
+      });
+
+      emptyState?.classList.toggle("hidden", visibleCount > 0);
+    }
+
+    searchInput?.addEventListener("input", applyFilters);
+    yearFilter?.addEventListener("change", applyFilters);
   }
 
-  searchInput?.addEventListener("input", applyFilters);
-  yearFilter?.addEventListener("change", applyFilters);
+  document.addEventListener("astro:page-load", initSeriesFilters);
 </script>

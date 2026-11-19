@@ -41,10 +41,10 @@ const initialItems = events.map(formatEventParts);
 <script>
   import { getUpcomingEvents, formatEventParts } from "../lib/firebase";
 
-  const list = document.getElementById("events-list");
-
   async function refreshEvents() {
+    const list = document.getElementById("events-list");
     if (!list) return;
+
     const { events } = await getUpcomingEvents(3);
     const items = events.map(formatEventParts);
 
@@ -65,7 +65,5 @@ const initialItems = events.map(formatEventParts);
       .join("");
   }
 
-  // Vuelve a consultar Firebase al cargar en el navegador (datos frescos
-  // aunque el HTML se haya generado en build time).
-  refreshEvents();
+  document.addEventListener("astro:page-load", refreshEvents);
 </script>

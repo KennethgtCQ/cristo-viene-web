@@ -1,0 +1,295 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Navbar from "../../components/Navbar.astro";
+import Footer from "../../components/Footer.astro";
+import BackToTop from "../../components/BackToTop.astro";
+import ScrollReveal from "../../components/ScrollReveal.astro";
+import CtaBanner from "../../components/CtaBanner.astro";
+import { MINISTRIES, ministryIcons, type Ministry } from "../../lib/ministerios";
+
+// Una página estática por cada ministerio definido en src/lib/ministerios.ts
+export function getStaticPaths() {
+  return MINISTRIES.map((ministry) => ({
+    params: { slug: ministry.slug },
+    props: { ministry },
+  }));
+}
+
+interface Props {
+  ministry: Ministry;
+}
+
+const { ministry } = Astro.props;
+const { subMinistries } = ministry;
+
+// Si solo hay un sub-ministerio (ej. Otros > Huellas) no hace falta
+// mostrar las pestañas.
+const hasTabs = subMinistries.length > 1;
+
+// Parte la descripción alrededor de la palabra resaltada.
+function splitHighlight(text: string, word?: string) {
+  const index = word ? text.indexOf(word) : -1;
+  if (!word || index === -1) return { before: text, match: "", after: "" };
+  return {
+    before: text.slice(0, index),
+    match: word,
+    after: text.slice(index + word.length),
+  };
+}
+---
+
+<Layout title={`${ministry.title} — Cristo Viene`}>
+  <Navbar />
+
+  <div style={`--ministry-color:${ministry.color}`}>
+    <main>
+      <!-- Hero -->
+      <section class="relative overflow-hidden px-6 pt-36 pb-16 md:pt-44 md:pb-24">
+        {ministry.heroImage && (
+          <div
+            aria-hidden="true"
+            class="pointer-events-none absolute inset-x-0 top-0 h-[85%]"
+            style="-webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 30%,#000 65%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0%,#000 30%,#000 65%,transparent 100%);"
+          >
+            <img src={ministry.heroImage} alt="" class="h-full w-full object-cover" />
+            <div class="absolute inset-0 bg-bg/60"></div>
+          </div>
+        )}
+
+        <div class="relative mx-auto max-w-5xl">
+          <a
+            href="/#ministerios"
+            class="inline-flex items-center gap-3 text-small text-text-primary transition-colors hover:text-accent"
+          >
+            <svg width="26" height="10" viewBox="0 0 26 10" fill="none" aria-hidden="true">
+              <path d="M25 5H1M5 1L1 5l4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Volver a ministerios
+          </a>
+
+          <div class="mt-16 md:mt-24">
+            <p class="m-text mb-3 text-eyebrow uppercase tracking-[0.25em]">
+              Nuestros ministerios
+            </p>
+            <h1 class="text-hero font-bold text-balance">{ministry.title}</h1>
+            <p class="mt-4 max-w-sm text-body text-text-secondary">{ministry.subtitle}</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pestañas de sub-ministerios -->
+      {hasTabs && (
+        <section class="px-6 pb-12 md:pb-16">
+          <div class="mx-auto max-w-5xl">
+            <div
+              role="tablist"
+              aria-label={`Grupos de ${ministry.title}`}
+              data-ministry-tabs
+              class="flex flex-wrap gap-5 md:gap-7"
+            >
+              {subMinistries.map((s, i) => (
+                <button
+                  type="button"
+                  role="tab"
+                  id={`tab-${s.slug}`}
+                  aria-controls={`panel-${s.slug}`}
+                  aria-selected={i === 0 ? "true" : "false"}
+                  data-tab={s.slug}
+                  data-active={i === 0 ? "true" : "false"}
+                  class="flex flex-col items-center gap-2"
+                >
+                  <span class="tab-circle flex h-16 w-16 items-center justify-center rounded-full bg-bg-block-secondary text-text-primary transition-colors">
+                    <svg
+                      width="26"
+                      height="26"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                      set:html={ministryIcons[s.icon]}
+                    />
+                  </span>
+                  <span class="tab-label border-b-2 border-transparent pb-0.5 text-small text-text-primary">
+                    {s.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <!-- Contenido de cada sub-ministerio (solo uno visible a la vez) -->
+      <section class="px-6 pb-20 md:pb-28">
+        <div class="mx-auto max-w-5xl">
+          {subMinistries.map((s, i) => {
+            const d = splitHighlight(s.description, s.highlight);
+            return (
+              <div
+                role="tabpanel"
+                id={`panel-${s.slug}`}
+                aria-labelledby={hasTabs ? `tab-${s.slug}` : undefined}
+                data-panel={s.slug}
+                hidden={i !== 0}
+              >
+                <h2 class="ff-light-italic text-h2 md:pl-[15%]">¿Para quién es?</h2>
+
+                <div class="mt-6 md:pl-[15%]">
+                  <div class="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1fr)_minmax(150px,26%)] md:items-start">
+                    <div class="relative">
+                      {s.image ? (
+                        <img
+                          src={s.image}
+                          alt={s.name}
+                          loading="lazy"
+                          class="aspect-[2/1] w-full rounded-xl object-cover"
+                        />
+                      ) : (
+                        <div class="flex aspect-[2/1] w-full items-center justify-center rounded-xl border border-dashed border-text-secondary/40 bg-bg-block text-small text-text-secondary">
+                          Foto
+                        </div>
+                      )}
+
+                      <p
+                        class="m-text ff-bold-italic mt-4 leading-none md:absolute md:-bottom-3 md:-left-[18%] md:mt-0"
+                        style="font-size:clamp(3rem,8vw,6.25rem)"
+                      >
+                        {s.name}
+                      </p>
+                    </div>
+
+                    <p class="text-small text-text-secondary">
+                      {d.before}
+                      {d.match && <strong class="m-text ff-bold-italic">{d.match}</strong>}
+                      {d.after}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Divisor con marca de cruz -->
+                <div class="relative mt-20 border-t border-text-secondary/40">
+                  <span
+                    aria-hidden="true"
+                    class="absolute -top-4 right-[6%] h-11 w-px bg-text-secondary/50"
+                  ></span>
+                </div>
+
+                <div class="mt-10 grid grid-cols-1 gap-x-10 gap-y-10 md:grid-cols-2 md:px-8">
+                  <div>
+                    <h3 class="ff-bold-italic mb-3 text-h3">Enfoque</h3>
+                    <ul class="list-disc space-y-1 pl-5 text-small text-text-secondary">
+                      {s.enfoque.map((item) => <li>{item}</li>)}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 class="ff-bold-italic mb-3 text-h3">Reuniones</h3>
+                    <ul class="list-disc space-y-1 pl-5 text-small text-text-secondary">
+                      {s.reuniones.map((item) => <li>{item}</li>)}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 class="ff-bold-italic mb-3 text-h3">¿Qué hacemos?</h3>
+                    <ul class="list-disc space-y-1 pl-5 text-small text-text-secondary">
+                      {s.queHacemos.map((item) => <li>{item}</li>)}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <CtaBanner />
+    </main>
+  </div>
+
+  <Footer />
+  <BackToTop />
+  <ScrollReveal />
+</Layout>
+
+<style>
+  .m-text {
+    color: var(--ministry-color);
+  }
+
+  /* Variantes itálicas de Aller (las familias que ya tienes en global.css). */
+  .ff-light-italic {
+    font-family: "Aller Light Italic", "Aller", ui-sans-serif, system-ui, sans-serif;
+    font-style: normal;
+    font-weight: 400;
+  }
+
+  .ff-bold-italic {
+    font-family: "Aller Bold Italic", "Aller", ui-sans-serif, system-ui, sans-serif;
+    font-style: normal;
+    font-weight: 400;
+  }
+
+  [data-tab]:hover .tab-circle,
+  [data-tab][data-active="true"] .tab-circle {
+    color: var(--ministry-color);
+  }
+
+  [data-tab][data-active="true"] .tab-label {
+    border-bottom-color: var(--ministry-color);
+  }
+</style>
+
+<script>
+  import { gsap } from "gsap";
+
+  function initMinistryTabs() {
+    const panels = Array.from(document.querySelectorAll<HTMLElement>("[data-panel]"));
+    if (panels.length === 0) return;
+
+    const tablist = document.querySelector<HTMLElement>("[data-ministry-tabs]");
+    const tabs = tablist
+      ? Array.from(tablist.querySelectorAll<HTMLButtonElement>("[data-tab]"))
+      : [];
+
+    function select(slug: string, animate: boolean) {
+      panels.forEach((panel) => {
+        const active = panel.dataset.panel === slug;
+        panel.hidden = !active;
+
+        if (active && animate) {
+          gsap.fromTo(
+            panel,
+            { opacity: 0, y: 16 },
+            { opacity: 1, y: 0, duration: 0.45, ease: "power3.out", clearProps: "opacity,transform" }
+          );
+        }
+      });
+
+      tabs.forEach((tab) => {
+        const active = tab.dataset.tab === slug;
+        tab.dataset.active = String(active);
+        tab.setAttribute("aria-selected", String(active));
+      });
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const slug = tab.dataset.tab!;
+        select(slug, true);
+        // Guarda la pestaña en la URL (#mujeres) sin romper el estado del router de Astro.
+        history.replaceState(history.state, "", `#${slug}`);
+      });
+    });
+
+    // Si entras con un enlace como /ministerios/discipulado#mujeres, abre esa pestaña.
+    const fromHash = location.hash.slice(1);
+    if (fromHash && panels.some((p) => p.dataset.panel === fromHash)) {
+      select(fromHash, false);
+    }
+  }
+
+  document.addEventListener("astro:page-load", initMinistryTabs);
+</script>
