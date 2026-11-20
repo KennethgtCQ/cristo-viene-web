@@ -62,6 +62,7 @@
   --raw-bg: #ffffff;
   --raw-bg-block: #f1f1f1;
   --raw-bg-block-secondary: #e3e3e3;
+  --raw-bg-block-tertiary: #000000;
   --raw-text-primary: #000000;
   --raw-text-secondary: #4c4c4c;
   --raw-accent: #0071bc;
@@ -74,6 +75,7 @@
     --raw-bg: #121212;
     --raw-bg-block: #1c1c1c;
     --raw-bg-block-secondary: #262626;
+    --raw-bg-block-tertiary: #D9D9D9;
     --raw-text-primary: #ffffff;
     --raw-text-secondary: #787878;
     --raw-accent: #d8b24b;
@@ -107,7 +109,7 @@
   --font-sans: "Aller", ui-sans-serif, system-ui, -apple-system, sans-serif;
 
   /* Escala de tamaños de texto (con line-height emparejado) */
-  --text-eyebrow: 0.8125rem;
+  --text-eyebrow: 1rem;
   --text-eyebrow--line-height: 1.4;
   --text-eyebrow--letter-spacing: 0.2em;
 

@@ -1,148 +1,92 @@
 ---
-// Reemplaza cada "src: null" por la ruta real de tu foto cuando la tengas,
-// por ejemplo: src: "/images/galeria-1.jpg" (colócala en /public/images).
-// Mientras "src" sea null, se muestra un bloque de color de relleno para
-// que el layout se vea correcto sin depender de imágenes externas.
+// Reemplaza cada "src" por la ruta de tu foto (ej. "/images/galeria-1.jpg",
+// guardada en /public/images). Si "src" está vacío se muestra un relleno.
+// Las alturas de las cards se configuran en HEIGHT_WAVE (en el script de abajo).
 const images = [
-  { src: null, alt: "Comunidad de la iglesia sonriendo juntos", offset: "up" },
-  { src: null, alt: "Familia visitando la iglesia", offset: "down" },
-  { src: null, alt: "Personas orando juntas", offset: "mid" },
-  { src: null, alt: "Congregación en tiempo de adoración", offset: "down" },
-  { src: null, alt: "Niños jugando en el ministerio infantil", offset: "up" },
+  { src: "", alt: "Comunidad de la iglesia sonriendo juntos" },
+  { src: "", alt: "Familia visitando la iglesia" },
+  { src: "", alt: "Personas orando juntas" },
+  { src: "", alt: "Congregación en tiempo de adoración" },
+  { src: "", alt: "Niños jugando en el ministerio infantil" },
 ];
-
-const offsetClass: Record<string, string> = {
-  up: "md:mt-0",
-  down: "md:mt-16",
-  mid: "md:mt-8",
-};
 ---
 
+<!--
+  -mt-7 sube la galería la mitad de la altura de los botones del hero
+  (~54px / 2) para que las cards de los extremos queden alineadas con el
+  centro de los botones. Si cambias el tamaño de los botones, ajusta este valor.
+  pointer-events-none evita que la galería tape el clic en la mitad inferior de los botones.
+-->
 <section
-  class="px-6 pb-24 md:pb-32"
+  data-gallery
   aria-label="Galería de fotos de la comunidad"
+  class="pointer-events-none relative -mt-7 overflow-hidden pb-24 md:pb-32"
 >
-  <div class="mx-auto max-w-7xl">
-    <!-- Mosaico desktop -->
-    <div
-      data-gallery
-      class="hidden md:flex items-start justify-center gap-5 lg:gap-6"
-    >
-      {
-        images.map((img, i) => (
+  <div data-gallery-track class="flex w-max items-start">
+    {images.map((img) => (
+      <div
+        data-gallery-card
+        class="overflow-hidden rounded-2xl bg-bg-block-secondary"
+      >
+        {img.src ? (
+          <img
+            src={img.src}
+            alt={img.alt}
+            loading="eager"
+            decoding="async"
+            draggable="false"
+            class="h-full w-full object-cover"
+          />
+        ) : (
           <div
-            data-gallery-item-desktop
-            class:list={[
-              "overflow-hidden rounded-card shrink-0 w-[19%] aspect-[5/9] bg-bg-block",
-              offsetClass[img.offset],
-            ]}
-            style={`transition-delay:${i * 60}ms`}
+            role="img"
+            aria-label={img.alt}
+            class="flex h-full w-full items-center justify-center"
           >
-            {img.src ? (
-              <img
-                src={img.src}
-                alt={img.alt}
-                loading="lazy"
-                class="h-full w-full object-cover"
-                width="500"
-                height="900"
-              />
-            ) : (
-              <div
-                class="flex h-full w-full items-center justify-center bg-bg-block-secondary"
-                role="img"
-                aria-label={img.alt}
-              >
-                <svg
-                  width="32"
-                  height="32"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  class="text-text-secondary/50"
-                >
-                  <rect
-                    x="3"
-                    y="5"
-                    width="18"
-                    height="14"
-                    rx="2"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                  />
-                  <circle cx="8.5" cy="10" r="1.5" fill="currentColor" />
-                  <path
-                    d="M21 16l-5.5-5.5L8 18"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </div>
-            )}
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" class="text-text-secondary/50" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.4" />
+              <circle cx="8.5" cy="10" r="1.5" fill="currentColor" />
+              <path d="M21 16l-5.5-5.5L8 18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
           </div>
-        ))
-      }
-    </div>
-
-    <!-- Carrusel móvil -->
-    <div
-      class="flex md:hidden gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-6 px-6"
-    >
-      {
-        images.map((img) => (
-          <div
-            data-gallery-item-mobile
-            class="snap-start shrink-0 w-[62%] aspect-[5/9] overflow-hidden rounded-card bg-bg-block"
-          >
-            {img.src ? (
-              <img
-                src={img.src}
-                alt={img.alt}
-                loading="lazy"
-                class="h-full w-full object-cover"
-                width="500"
-                height="900"
-              />
-            ) : (
-              <div
-                class="flex h-full w-full items-center justify-center bg-bg-block-secondary"
-                role="img"
-                aria-label={img.alt}
-              >
-                <svg
-                  width="32"
-                  height="32"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  class="text-text-secondary/50"
-                >
-                  <rect
-                    x="3"
-                    y="5"
-                    width="18"
-                    height="14"
-                    rx="2"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                  />
-                  <circle cx="8.5" cy="10" r="1.5" fill="currentColor" />
-                  <path
-                    d="M21 16l-5.5-5.5L8 18"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </div>
-            )}
-          </div>
-        ))
-      }
-    </div>
+        )}
+      </div>
+    ))}
   </div>
 </section>
+
+<style>
+  /* Móvil: cards grandes (se ven ~2). Desktop: proporciones del diseño. */
+  [data-gallery] {
+    --card-w: 46vw;
+    --card-gap: 4vw;
+  }
+
+  @media (min-width: 768px) {
+    [data-gallery] {
+      --card-w: min(19.8vw, 360px);
+      --card-gap: calc(var(--card-w) * 0.105);
+    }
+  }
+
+  [data-gallery-card] {
+    width: var(--card-w);
+    aspect-ratio: 190 / 299;
+    margin-right: var(--card-gap);
+    flex-shrink: 0;
+    will-change: transform;
+  }
+
+  /* Oculto hasta que el script posiciona el carrusel (evita un salto visual). */
+  [data-gallery-track] {
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  [data-gallery-track][data-ready] {
+    opacity: 1;
+  }
+</style>
 
 <script>
   import { gsap } from "gsap";
@@ -150,46 +94,172 @@ const offsetClass: Record<string, string> = {
 
   gsap.registerPlugin(ScrollTrigger);
 
-  let mm: gsap.MatchMedia | undefined;
+  // ---------------------------------------------------------------------
+  // CONFIGURACIÓN
+  // ---------------------------------------------------------------------
+  // Hacia dónde se mueven las cards al BAJAR con el scroll:
+  //   "left"  -> salen por la izquierda y entran por la derecha
+  //   "right" -> al revés
+  // Al subir siempre va en sentido contrario hasta volver a la posición inicial.
+  const SCROLL_DOWN_MOVES: "left" | "right" = "left";
+  // Píxeles que avanza el carrusel por cada píxel de scroll.
+  const SPEED = 0.6;
+  // Suavizado: 0.05 = muy flotante, 1 = sin suavizado.
+  const SMOOTHING = 0.1;
+  // Altura de cada posición de la secuencia, en múltiplos del ancho de la card
+  // (0 = arriba del todo). La secuencia se repite en bucle:
+  //   0 → 0.7 → 0.5 → 0.7 → 0 → 0.7 → 0.5 → 0.7 → 0 ...
+  // Las primeras 5 posiciones son las del diseño (extremos 0, centro 0.5,
+  // laterales 0.7). Al reentrar, la 1ª foto toma la altura de la 2ª, etc.
+  const HEIGHT_WAVE = [0, 0.7, 0.5, 0.7];
 
-  document.addEventListener("astro:page-load", () => {
-    if (!document.querySelector("[data-gallery-item-desktop]")) return;
+  const mod = (n: number, m: number) => ((n % m) + m) % m;
 
-    mm?.revert();
-    mm = gsap.matchMedia();
+  let cleanup: (() => void) | null = null;
 
-    mm.add("(min-width: 768px)", () => {
-      gsap.from("[data-gallery-item-desktop]", {
-        y: 50,
-        opacity: 0,
-        duration: 0.8,
-        ease: "power3.out",
-        stagger: 0.1,
-        scrollTrigger: {
-          trigger: "[data-gallery-item-desktop]",
-          start: "top 85%",
-        },
+  function initGallery() {
+    cleanup?.();
+    cleanup = null;
+
+    const sectionEl = document.querySelector<HTMLElement>("[data-gallery]");
+    const trackEl = sectionEl?.querySelector<HTMLElement>("[data-gallery-track]");
+    if (!sectionEl || !trackEl) return;
+
+    const section: HTMLElement = sectionEl;
+    const track: HTMLElement = trackEl;
+
+    // Plantillas: las cards originales (una por foto). Con ellas se arma el anillo.
+    const templates = Array.from(
+      track.querySelectorAll<HTMLElement>("[data-gallery-card]")
+    ).map((card) => card.cloneNode(true) as HTMLElement);
+    const photoCount = templates.length;
+    if (photoCount < 2) return;
+
+    const direction = SCROLL_DOWN_MOVES === "left" ? -1 : 1;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const centerPhoto = Math.floor(photoCount / 2); // la foto que va centrada al inicio
+
+    let cards: HTMLElement[] = [];
+    let naturalLeft: number[] = [];
+    let ringWidth = 0; // circunferencia del anillo
+    let minPos = 0; // posición mínima visible (justo fuera de pantalla, a la izquierda)
+    let baseX = 0; // desplazamiento que deja la foto central centrada al inicio
+    let firstIndex = 0; // índice (en la secuencia infinita) de la primera card del anillo
+    let cardWidth = 0;
+    let lastWidth = 0;
+    let current = window.scrollY; // posición suavizada
+    let target = window.scrollY; // posición real del scroll
+
+    function render() {
+      if (!ringWidth) return;
+      const shift = direction * current * SPEED;
+
+      for (let i = 0; i < cards.length; i++) {
+        // Posición sin envolver y cuántas vueltas al anillo hay que darle
+        // para que caiga dentro de la ventana [minPos, minPos + ringWidth).
+        const q = naturalLeft[i] + baseX + shift;
+        const laps = Math.ceil((minPos - q) / ringWidth);
+        const x = baseX + shift + laps * ringWidth;
+
+        // Índice de esta card en la secuencia infinita => su altura en la onda.
+        const index = firstIndex + i + cards.length * laps;
+        const y = HEIGHT_WAVE[mod(index, HEIGHT_WAVE.length)] * cardWidth;
+
+        cards[i].style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      }
+    }
+
+    function build() {
+      // 1) Mide con dos cards de prueba (ancho y separación según el CSS actual).
+      const probe = templates.slice(0, 2).map((t) => t.cloneNode(true) as HTMLElement);
+      track.replaceChildren(...probe);
+      const pitch = probe[1].offsetLeft - probe[0].offsetLeft; // ancho + separación
+      cardWidth = probe[0].offsetWidth;
+      if (!pitch || !cardWidth) return;
+
+      const viewport = section.clientWidth;
+      lastWidth = viewport;
+
+      // 2) Cantidad de cards del anillo: suficiente para que el salto de un
+      //    lado al otro ocurra siempre fuera de pantalla, y múltiplo del
+      //    número de fotos para que cada card conserve su foto al dar la vuelta.
+      let total = Math.ceil(viewport / pitch) + 2;
+      total = Math.ceil(total / photoCount) * photoCount;
+
+      ringWidth = total * pitch;
+      minPos = -pitch;
+
+      // 3) Primer índice de la secuencia que cae dentro de la ventana visible.
+      firstIndex = Math.ceil(
+        centerPhoto + (minPos - viewport / 2 + cardWidth / 2) / pitch
+      );
+
+      // 4) Arma el anillo: la card i muestra la foto que le toca en la secuencia.
+      cards = Array.from({ length: total }, (_, i) => {
+        const card = templates[mod(firstIndex + i, photoCount)].cloneNode(true) as HTMLElement;
+        if (i >= photoCount) card.setAttribute("aria-hidden", "true");
+        return card;
       });
-    });
+      track.replaceChildren(...cards);
 
-    mm.add("(max-width: 767px)", () => {
-      gsap.from("[data-gallery-item-mobile]", {
-        y: 30,
-        opacity: 0,
-        duration: 0.6,
-        ease: "power3.out",
-        stagger: 0.08,
-        scrollTrigger: {
-          trigger: "[data-gallery-item-mobile]",
-          start: "top 90%",
-        },
-      });
-    });
-  });
+      naturalLeft = cards.map((card) => card.offsetLeft);
+      baseX =
+        viewport / 2 -
+        cardWidth / 2 +
+        (firstIndex - centerPhoto) * pitch -
+        naturalLeft[0];
 
-  // Antes de cambiar de página, limpia las animaciones de la página que se va.
+      // Espacio inferior para la card más baja de la onda.
+      track.style.paddingBottom = `${Math.max(...HEIGHT_WAVE) * cardWidth}px`;
+
+      render();
+      track.dataset.ready = "true";
+    }
+
+    const tick = () => {
+      if (current === target) return;
+      // Suavizado independiente de los FPS.
+      const ease = 1 - Math.pow(1 - SMOOTHING, gsap.ticker.deltaRatio());
+      current += (target - current) * ease;
+      if (Math.abs(target - current) < 0.05) current = target;
+      render();
+    };
+
+    const trigger = reduceMotion
+      ? null
+      : ScrollTrigger.create({
+          start: 0,
+          end: "max",
+          onUpdate: (self) => {
+            target = self.scroll();
+          },
+        });
+
+    let resizeTimer: number | undefined;
+    const onResize = () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        if (section.clientWidth !== lastWidth) build();
+      }, 150);
+    };
+
+    window.addEventListener("resize", onResize);
+    gsap.ticker.add(tick);
+    build();
+
+    cleanup = () => {
+      gsap.ticker.remove(tick);
+      trigger?.kill();
+      window.removeEventListener("resize", onResize);
+      window.clearTimeout(resizeTimer);
+    };
+  }
+
+  document.addEventListener("astro:page-load", initGallery);
+
+  // Con las view transitions, limpia antes de que se cambie de página.
   document.addEventListener("astro:before-swap", () => {
-    mm?.revert();
-    mm = undefined;
+    cleanup?.();
+    cleanup = null;
   });
 </script>
