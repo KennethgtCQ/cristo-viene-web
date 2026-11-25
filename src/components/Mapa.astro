@@ -28,13 +28,24 @@ const { alturaMinima = 400 } = Astro.props;
   setWorkerUrl(workerUrl);
 
   const ESTILO_URL = "https://tiles.openfreemap.org/styles/liberty";
-  const COLORES = {
-    fondo: "#1C1C1C",
-    calles: "#D9D9D9",
-    marcador: "#D8B24B",
-    textoCalles: "#434343",
-    textoSecundario: "#FFFFFF",
+  const TEMAS = {
+    oscuro: {
+      fondo: "#1C1C1C",
+      construcciones: "#1C1C1C",
+      calles: "#D9D9D9",
+      textoCalles: "#434343",
+      textoSecundario: "#FFFFFF",
+    },
+    claro: {
+      fondo: "#FFFFFF",
+      construcciones: "#F1F1F1",
+      calles: "#D9D9D9",
+      textoCalles: "#4C4C4C",
+      textoSecundario: "#4C4C4C",
+    },
   };
+
+  type Tema = (typeof TEMAS)[keyof typeof TEMAS];
 
   let estiloBase: any;
 
@@ -47,7 +58,7 @@ const { alturaMinima = 400 } = Astro.props;
     return estiloBase;
   }
 
-  function aplicarColores(estiloOriginal: any) {
+  function aplicarColores(estiloOriginal: any, colores: Tema) {
     const estilo = structuredClone(estiloOriginal);
 
     for (const capa of estilo.layers) {
@@ -56,34 +67,38 @@ const { alturaMinima = 400 } = Astro.props;
       capa.paint ??= {};
 
       if (capa.type === "background") {
-        capa.paint["background-color"] = COLORES.fondo;
+        capa.paint["background-color"] = colores.fondo;
         delete capa.paint["background-pattern"];
         continue;
       }
 
       if (capa.type === "fill" && ["building", "landcover", "landuse", "water"].includes(sourceLayer)) {
-        capa.paint["fill-color"] = COLORES.fondo;
+        capa.paint["fill-color"] = sourceLayer === "building"
+          ? colores.construcciones
+          : colores.fondo;
         delete capa.paint["fill-pattern"];
         delete capa.paint["fill-outline-color"];
         continue;
       }
 
       if (capa.type === "fill-extrusion" && sourceLayer === "building") {
-        capa.paint["fill-extrusion-color"] = COLORES.fondo;
+        capa.paint["fill-extrusion-color"] = colores.construcciones;
         continue;
       }
 
       if (capa.type === "line" && sourceLayer === "transportation") {
-        capa.paint["line-color"] = id.includes("casing") ? COLORES.fondo : COLORES.calles;
+        capa.paint["line-color"] = id.includes("casing") ? colores.fondo : colores.calles;
         continue;
       }
 
       if (capa.type === "symbol") {
         const esNombreDeCalle = sourceLayer === "transportation_name";
         capa.paint["text-color"] = esNombreDeCalle
-          ? COLORES.textoCalles
-          : COLORES.textoSecundario;
-        capa.paint["text-halo-color"] = esNombreDeCalle ? COLORES.calles : COLORES.fondo;
+          ? colores.textoCalles
+          : colores.textoSecundario;
+        capa.paint["text-halo-color"] = esNombreDeCalle
+          ? colores.calles
+          : colores.fondo;
         capa.paint["text-halo-width"] = esNombreDeCalle ? 1.2 : 1.5;
       }
     }
@@ -108,8 +123,8 @@ const { alturaMinima = 400 } = Astro.props;
     marcador.innerHTML = `
       <svg width="38" height="48" viewBox="0 0 38 48" fill="none" aria-hidden="true">
         <path d="M19 1C9.1 1 1 9.1 1 19c0 13.1 18 28 18 28s18-14.9 18-28C37 9.1 28.9 1 19 1z"
-          fill="${COLORES.marcador}" stroke="#FFFFFF" stroke-width="2" />
-        <circle cx="19" cy="19" r="6" fill="#1C1C1C" stroke="#FFFFFF" stroke-width="2" />
+          fill="var(--raw-accent)" stroke="var(--raw-bg)" stroke-width="2" />
+        <circle cx="19" cy="19" r="6" fill="var(--raw-bg)" stroke="var(--raw-bg)" stroke-width="2" />
       </svg>
     `;
     return marcador;
@@ -118,6 +133,8 @@ const { alturaMinima = 400 } = Astro.props;
   let limpiar: (() => void) | null = null;
 
   async function crearMapa(contenedor: HTMLElement) {
+    const esquema = window.matchMedia("(prefers-color-scheme: dark)");
+    const obtenerTema = () => TEMAS[esquema.matches ? "oscuro" : "claro"];
     let base;
     try {
       base = await obtenerEstiloBase();
@@ -131,7 +148,7 @@ const { alturaMinima = 400 } = Astro.props;
 
     const mapa = new maplibregl.Map({
       container: contenedor,
-      style: aplicarColores(base),
+      style: aplicarColores(base, obtenerTema()),
       center: [UBICACION.lng, UBICACION.lat],
       zoom: 16,
       pitch: 0,
@@ -164,10 +181,14 @@ const { alturaMinima = 400 } = Astro.props;
       .setPopup(popup)
       .addTo(mapa);
 
+    const cambiarTema = () => mapa.setStyle(aplicarColores(base, obtenerTema()));
+    esquema.addEventListener("change", cambiarTema);
+
     const observadorTamano = new ResizeObserver(() => mapa.resize());
     observadorTamano.observe(contenedor);
     limpiar = () => {
       observadorTamano.disconnect();
+      esquema.removeEventListener("change", cambiarTema);
       mapa.remove();
     };
   }
@@ -201,7 +222,7 @@ const { alturaMinima = 400 } = Astro.props;
     min-height: var(--mapa-alto-min, 400px);
     border-radius: 20px;
     overflow: hidden;
-    background: #1C1C1C;
+    background: var(--raw-bg-block);
   }
 
   #mapa-cristo-viene {
@@ -218,12 +239,12 @@ const { alturaMinima = 400 } = Astro.props;
     gap: 8px;
     height: 100%;
     min-height: var(--mapa-alto-min, 400px);
-    color: #FFFFFF;
+    color: var(--raw-text-secondary);
     font-size: 14px;
     text-align: center;
   }
 
-  .mapa-respaldo a { color: #D8B24B; font-weight: 700; }
+  .mapa-respaldo a { color: var(--raw-accent); font-weight: 700; }
   .mapa-wrapper .marcador-iglesia { cursor: pointer; }
   .mapa-wrapper .marcador-iglesia svg {
     display: block;
@@ -234,34 +255,48 @@ const { alturaMinima = 400 } = Astro.props;
   .mapa-wrapper .marcador-iglesia:hover svg { transform: scale(1.08); }
 
   .mapa-wrapper .maplibregl-popup-content {
-    background: #1C1C1C;
-    color: #FFFFFF;
-    border: 1px solid rgb(255 255 255 / 0.2);
+    background: var(--raw-bg-block-secondary);
+    color: var(--raw-text-primary);
+    border: 1px solid color-mix(in srgb, var(--raw-text-secondary) 35%, transparent);
     border-radius: 12px;
     padding: 16px 20px;
     box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
   }
-  .mapa-wrapper .maplibregl-popup-tip { border-top-color: #1C1C1C; }
+  .mapa-wrapper .maplibregl-popup-anchor-top .maplibregl-popup-tip,
+  .mapa-wrapper .maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+  .mapa-wrapper .maplibregl-popup-anchor-top-right .maplibregl-popup-tip {
+    border-bottom-color: var(--raw-bg-block-secondary);
+  }
+  .mapa-wrapper .maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+  .mapa-wrapper .maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+  .mapa-wrapper .maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+    border-top-color: var(--raw-bg-block-secondary);
+  }
+  .mapa-wrapper .maplibregl-popup-anchor-left .maplibregl-popup-tip { border-right-color: var(--raw-bg-block-secondary); }
+  .mapa-wrapper .maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: var(--raw-bg-block-secondary); }
   .popup-contenido { font-family: "Aller", Arial, sans-serif; }
   .popup-contenido strong { font-size: 15px; font-weight: 700; }
-  .popup-contenido p { color: #FFFFFF; font-size: 13px; margin: 6px 0 12px; }
-  .popup-contenido a { color: #D8B24B; text-decoration: none; font-size: 13px; font-weight: 700; }
+  .popup-contenido p { color: var(--raw-text-secondary); font-size: 13px; margin: 6px 0 12px; }
+  .popup-contenido a { color: var(--raw-accent); text-decoration: none; font-size: 13px; font-weight: 700; }
 
   .mapa-wrapper .maplibregl-ctrl-group {
-    background: #1C1C1C;
-    border: 1px solid rgb(255 255 255 / 0.25);
+    background: var(--raw-bg-block-secondary);
+    border: 1px solid color-mix(in srgb, var(--raw-text-secondary) 35%, transparent);
     border-radius: 10px;
     box-shadow: none;
     overflow: hidden;
   }
-  .mapa-wrapper .maplibregl-ctrl-group button { background-color: #1C1C1C; }
-  .mapa-wrapper .maplibregl-ctrl-group button + button { border-top: 1px solid rgb(255 255 255 / 0.2); }
-  .mapa-wrapper .maplibregl-ctrl-group button .maplibregl-ctrl-icon,
-  .mapa-wrapper .maplibregl-ctrl-attrib-button { filter: invert(1); }
+  .mapa-wrapper .maplibregl-ctrl-group button { background-color: var(--raw-bg-block-secondary); }
+  .mapa-wrapper .maplibregl-ctrl-group button + button { border-top: 1px solid color-mix(in srgb, var(--raw-text-secondary) 30%, transparent); }
   .mapa-wrapper .maplibregl-ctrl-attrib.maplibregl-compact {
-    background: rgb(28 28 28 / 0.9);
+    background: color-mix(in srgb, var(--raw-bg-block-secondary) 90%, transparent);
     border-radius: 10px;
-    color: #FFFFFF;
+    color: var(--raw-text-secondary);
   }
-  .mapa-wrapper .maplibregl-ctrl-attrib a { color: #FFFFFF; }
+  .mapa-wrapper .maplibregl-ctrl-attrib a { color: var(--raw-text-secondary); }
+
+  @media (prefers-color-scheme: dark) {
+    .mapa-wrapper .maplibregl-ctrl-group button .maplibregl-ctrl-icon,
+    .mapa-wrapper .maplibregl-ctrl-attrib-button { filter: invert(1); }
+  }
 </style>
