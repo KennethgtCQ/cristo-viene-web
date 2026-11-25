@@ -5,9 +5,9 @@ import PageHeader from "../../../components/PageHeader.astro";
 import Footer from "../../../components/Footer.astro";
 import BackToTop from "../../../components/BackToTop.astro";
 import ScrollReveal from "../../../components/ScrollReveal.astro";
-import { getAllSeries } from "../../../lib/series";
+import { getAllSeries, sortSeriesNewestFirst } from "../../../lib/series";
 
-const series = await getAllSeries();
+const series = sortSeriesNewestFirst(await getAllSeries());
 
 // Años únicos presentes (el más reciente primero), para el dropdown de filtro.
 const years = [
@@ -142,6 +142,11 @@ const years = [
           </a>
         ))}
       </div>
+      <div class="mx-auto mt-10 flex max-w-6xl justify-center">
+        <button id="series-load-more" type="button" class="rounded-full border border-text-secondary/30 px-6 py-3 text-small text-text-primary transition-colors hover:border-accent hover:text-accent">
+          Cargar más series
+        </button>
+      </div>
     </section>
   </main>
   <Footer />
@@ -179,34 +184,63 @@ const years = [
 
     const cards = Array.from(document.querySelectorAll<HTMLElement>("[data-series-card]"));
     const emptyState = document.getElementById("series-empty-state");
+    const loadMore = document.getElementById("series-load-more");
+    const pageSize = 9;
+    let shownCount = pageSize;
 
     let selectedYear = "";
 
     function applyFilters() {
       const query = search.value.trim().toLowerCase();
-      let visibleCount = 0;
-
-      cards.forEach((card) => {
+      const matches = cards.filter((card) => {
         const matchesQuery = !query || card.dataset.title?.includes(query);
         const matchesYear = !selectedYear || card.dataset.year === selectedYear;
-        const visible = Boolean(matchesQuery && matchesYear);
-        card.classList.toggle("hidden", !visible);
-        if (visible) visibleCount++;
+        return Boolean(matchesQuery && matchesYear);
       });
 
+      matches.forEach((card, index) => card.classList.toggle("hidden", index >= shownCount));
+      cards.filter((card) => !matches.includes(card)).forEach((card) => card.classList.add("hidden"));
+      const visibleCount = Math.min(matches.length, shownCount);
+
       emptyState?.classList.toggle("hidden", visibleCount > 0);
+      loadMore?.classList.toggle("hidden", matches.length <= shownCount);
 
       // Las cards cambian de posición al filtrar: se recalculan las
       // animaciones de scroll para que ninguna quede invisible.
       ScrollTrigger.refresh();
     }
 
-    search.addEventListener("input", applyFilters);
     applyFilters(); // por si el navegador restauró texto en el buscador
+
+    const showNextPage = () => {
+      shownCount += pageSize;
+      applyFilters();
+    };
+    const onSearch = () => {
+      shownCount = pageSize;
+      applyFilters();
+    };
+    search.addEventListener("input", onSearch);
+    loadMore?.addEventListener("click", showNextPage);
+    const loadMoreObserver = loadMore && "IntersectionObserver" in window
+      ? new IntersectionObserver((entries) => {
+          if (entries.some((entry) => entry.isIntersecting) && !loadMore.classList.contains("hidden")) {
+            showNextPage();
+          }
+        }, { rootMargin: "300px" })
+      : null;
+    if (loadMore && loadMoreObserver) loadMoreObserver.observe(loadMore);
 
     // ---- Dropdown de año ----
     const dropdown = document.querySelector<HTMLElement>("[data-year-dropdown]");
-    if (!dropdown) return;
+    if (!dropdown) {
+      teardown = () => {
+        search.removeEventListener("input", onSearch);
+        loadMore?.removeEventListener("click", showNextPage);
+        loadMoreObserver?.disconnect();
+      };
+      return;
+    }
 
     const button = dropdown.querySelector<HTMLButtonElement>("[data-year-button]")!;
     const list = dropdown.querySelector<HTMLElement>("[data-year-list]")!;
@@ -250,6 +284,7 @@ const years = [
     function choose(index: number) {
       const option = options[index];
       selectedYear = option.dataset.value ?? "";
+      shownCount = pageSize;
       options.forEach((o, i) => o.setAttribute("aria-selected", String(i === index)));
       label.textContent = option.querySelector("span")?.textContent ?? "";
       close();
@@ -318,7 +353,12 @@ const years = [
       if (option) choose(options.indexOf(option));
     });
 
-    teardown = () => document.removeEventListener("click", onOutsideClick);
+    teardown = () => {
+      document.removeEventListener("click", onOutsideClick);
+      search.removeEventListener("input", onSearch);
+      loadMore?.removeEventListener("click", showNextPage);
+      loadMoreObserver?.disconnect();
+    };
   }
 
   document.addEventListener("astro:page-load", initSeriesFilters);

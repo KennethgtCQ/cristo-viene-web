@@ -44,6 +44,7 @@ export interface ResolvedSeries {
   thumbnail?: string;
   trackCount?: number;
   year?: number;
+  createdAt?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -126,7 +127,7 @@ async function fetchOEmbed(url: string): Promise<{ title: string; thumbnail_url?
 // --- Detalle del playlist individual: track_count, año, tracks -----------
 async function scrapePlaylistDetail(
   url: string
-): Promise<{ trackCount?: number; year?: number; tracks?: Track[] } | null> {
+): Promise<{ trackCount?: number; year?: number; createdAt?: string; tracks?: Track[] } | null> {
   try {
     const html = await fetchHtml(url);
     const hydration = extractHydration(html);
@@ -148,6 +149,7 @@ async function scrapePlaylistDetail(
     return {
       trackCount: (playlistEntry.track_count as number | undefined) ?? (tracks.length || undefined),
       year: playlistEntry.created_at ? new Date(playlistEntry.created_at as string).getFullYear() : undefined,
+      createdAt: playlistEntry.created_at as string | undefined,
       tracks: tracks.length ? tracks : undefined,
     };
   } catch (err) {
@@ -190,6 +192,7 @@ export async function getAllSeries(): Promise<ResolvedSeries[]> {
         thumbnail: oembed?.thumbnail_url,
         trackCount: detail?.trackCount,
         year: detail?.year,
+        createdAt: detail?.createdAt,
       } satisfies ResolvedSeries;
     })
   );
@@ -202,6 +205,14 @@ export async function getAllSeries(): Promise<ResolvedSeries[]> {
   );
 
   return cachedSeries;
+}
+
+export function sortSeriesNewestFirst(series: ResolvedSeries[]): ResolvedSeries[] {
+  return [...series].sort((a, b) => {
+    const aTime = a.createdAt ? Date.parse(a.createdAt) : 0;
+    const bTime = b.createdAt ? Date.parse(b.createdAt) : 0;
+    return bTime - aTime || (b.year ?? 0) - (a.year ?? 0);
+  });
 }
 
 export async function getSeriesBySlug(slug: string): Promise<ResolvedSeries | undefined> {

@@ -6,10 +6,10 @@ import BackToTop from "../components/BackToTop.astro";
 import ScrollReveal from "../components/ScrollReveal.astro";
 import MediaPlayer from "../components/MediaPlayer.astro";
 import { getFeaturedMessage } from "../lib/messages";
-import { getAllSeries } from "../lib/series";
+import { getAllSeries, sortSeriesNewestFirst } from "../lib/series";
 
 const featured = await getFeaturedMessage();
-const series = await getAllSeries();
+const series = sortSeriesNewestFirst(await getAllSeries());
 const previewSeries = series.slice(0, 3);
 ---
 
@@ -39,7 +39,7 @@ const previewSeries = series.slice(0, 3);
       <section class="px-6 pb-20 md:pb-28">
         <div class="mx-auto max-w-6xl">
           <p class="text-eyebrow uppercase tracking-[0.3em] text-text-secondary mb-6 flex items-center gap-3">
-            Destacado <span class="h-px w-10 bg-text-secondary/40 inline-block"></span>
+            Destacado
           </p>
 
           <div data-reveal class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-14 items-center">

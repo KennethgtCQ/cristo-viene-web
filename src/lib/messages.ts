@@ -9,7 +9,7 @@
 // track que sabes que vas a subir), agrega un objeto a MANUAL_OVERRIDE y
 // tiene prioridad sobre la detección automática.
 
-import { getAllSeries, getPlaylistTracks } from "./series";
+import { getAllSeries, getPlaylistTracks, sortSeriesNewestFirst } from "./series";
 
 export type MediaProvider = "youtube" | "soundcloud";
 
@@ -35,28 +35,27 @@ async function getAutoFeaturedMessage(): Promise<Message | undefined> {
   const series = await getAllSeries();
   if (series.length === 0) return undefined;
 
-  // Asumimos que getAllSeries() ya devuelve la serie más reciente primero
-  // (así viene ordenada la página de "sets" de SoundCloud). Si tienes el
-  // campo "year" en varias series, usamos ese como desempate explícito.
-  const mostRecentSeries = [...series].sort((a, b) => (b.year ?? 0) - (a.year ?? 0))[0];
-
-  const tracks = await getPlaylistTracks(mostRecentSeries.soundcloudUrl);
-  if (tracks.length === 0) {
-    console.error(
-      `[messages.ts] La serie más reciente ("${mostRecentSeries.title}") no devolvió tracks; ` +
-        "no se puede armar el destacado automático."
-    );
-    return undefined;
-  }
-
-  // "El track que esté último en esa playlist", tal como lo pediste.
-  const lastTrack = tracks[tracks.length - 1];
+  // El destacado sale del track publicado más recientemente en cualquier set.
+  const candidates = await Promise.all(
+    sortSeriesNewestFirst(series).map(async (serie) => ({
+      serie,
+      tracks: await getPlaylistTracks(serie.soundcloudUrl),
+    }))
+  );
+  const newest = candidates
+    .flatMap(({ serie, tracks }) => tracks.map((track) => ({ serie, track })))
+    .sort((a, b) => {
+      const aTime = a.track.createdAt ? Date.parse(a.track.createdAt) : 0;
+      const bTime = b.track.createdAt ? Date.parse(b.track.createdAt) : 0;
+      return (Number.isNaN(bTime) ? 0 : bTime) - (Number.isNaN(aTime) ? 0 : aTime);
+    })[0];
+  if (!newest) return undefined;
 
   return {
-    title: lastTrack.title,
-    series: mostRecentSeries.title,
+    title: newest.track.title,
+    series: newest.serie.title,
     provider: "soundcloud",
-    soundcloudUrl: lastTrack.permalinkUrl,
+    soundcloudUrl: newest.track.permalinkUrl,
   };
 }
 

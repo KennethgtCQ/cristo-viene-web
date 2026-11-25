@@ -1,4 +1,7 @@
 ---
+import logoNegro from "../images/logo_negro.png";
+import logoBlanco from "../images/logo_blanco.png";
+
 const year = new Date().getFullYear();
 
 const columns = [
@@ -28,7 +31,10 @@ const columns = [
     <div class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr] gap-10 md:gap-8">
       <div>
         <div class="flex items-center gap-2 mb-4">
-          <img src="../../src/images/logo.png" alt="Cristo Viene" class="h-12 w-auto" />
+          <picture>
+            <source srcset={logoBlanco.src} media="(prefers-color-scheme: dark)" />
+            <img src={logoNegro.src} alt="Cristo Viene" class="h-26 w-auto" />
+          </picture>
         </div>
         <p class="text-body text-text-secondary max-w-xs">
           Trabajamos para dar a conocer a Jesús y enseñar la vida que Él quiere que vivamos.
