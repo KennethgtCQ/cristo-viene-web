@@ -1,0 +1,450 @@
+---
+import "maplibre-gl/dist/maplibre-gl.css";
+
+interface Props {
+  /** Alto mínimo del mapa en px. */
+  alturaMinima?: number;
+}
+
+const { alturaMinima = 400 } = Astro.props;
+---
+
+<div class="mapa-wrapper" style={`--mapa-alto-min:${alturaMinima}px`}>
+  <div
+    id="mapa-cristo-viene"
+    role="region"
+    aria-label="Mapa con la ubicación de Iglesia Cristo Viene en Cartago"
+  ></div>
+</div>
+
+<script>
+  import * as maplibregl from "maplibre-gl";
+  import { UBICACION, COMO_LLEGAR_URL } from "../lib/ubicacion";
+
+  const ESTILO_URL = "https://tiles.openfreemap.org/styles/liberty";
+  const ALTURA_PIN = 58; // alto en px del pin SVG (la punta queda en la coordenada)
+
+  // Paletas del mapa. Cambian solas con el tema del sistema.
+  type Tema = {
+    fondo: string;
+    agua: string;
+    edificios: string;
+    calles: string;
+    callesBorde: string;
+    texto: string; // nombres de calles (van sobre la calle)
+    textoSuave: string; // resto de etiquetas (barrios, ciudades)
+  };
+
+  const TEMAS: Record<"oscuro" | "claro", Tema> = {
+    oscuro: {
+      fondo: "#1C1C1C",
+      agua: "#141414",
+      edificios: "#262626",
+      calles: "#D9D9D9",
+      callesBorde: "#1C1C1C",
+      texto: "#434343",
+      textoSuave: "#8A8A8A",
+    },
+    claro: {
+      fondo: "#EDEDED",
+      agua: "#DADADA",
+      edificios: "#E0E0E0",
+      calles: "#FFFFFF",
+      callesBorde: "#CFCFCF",
+      texto: "#4C4C4C",
+      textoSuave: "#6B6B6B",
+    },
+  };
+
+  // Capas del esquema OpenMapTiles que no queremos mostrar (la iglesia ya
+  // tiene su propio marcador).
+  const FUENTES_OCULTAS = ["poi", "housenumber", "mountain_peak", "aerodrome_label", "aeroway", "boundary"];
+
+  // Popup: separación respecto al pin según hacia dónde se abra.
+  const SOBRE_PIN: [number, number] = [0, -ALTURA_PIN];
+  const OFFSET_POPUP = {
+    center: [0, 0],
+    top: [0, 6],
+    "top-left": [0, 6],
+    "top-right": [0, 6],
+    bottom: SOBRE_PIN,
+    "bottom-left": SOBRE_PIN,
+    "bottom-right": SOBRE_PIN,
+    left: [10, -ALTURA_PIN / 2],
+    right: [-10, -ALTURA_PIN / 2],
+  };
+
+  // El estilo base se descarga una sola vez (se reutiliza al volver a la página).
+  let estiloBase: any = null;
+
+  async function obtenerEstiloBase() {
+    if (!estiloBase) {
+      const respuesta = await fetch(ESTILO_URL);
+      if (!respuesta.ok) throw new Error(`OpenFreeMap respondió ${respuesta.status}`);
+      estiloBase = await respuesta.json();
+    }
+    return estiloBase;
+  }
+
+  // Devuelve una copia del estilo con los colores del tema. Se decide por
+  // "source-layer" (más fiable que buscar texto en el id de cada capa).
+  function aplicarTema(base: any, tema: Tema) {
+    const estilo = structuredClone(base);
+
+    for (const capa of estilo.layers) {
+      capa.paint ??= {};
+      capa.layout ??= {};
+
+      const fuente: string = capa["source-layer"] ?? "";
+      const id: string = String(capa.id).toLowerCase();
+
+      switch (capa.type) {
+        case "background":
+          capa.paint["background-color"] = tema.fondo;
+          delete capa.paint["background-pattern"];
+          break;
+
+        case "fill":
+          capa.paint["fill-color"] =
+            fuente === "water" ? tema.agua : fuente === "building" ? tema.edificios : tema.fondo;
+          delete capa.paint["fill-pattern"];
+          delete capa.paint["fill-outline-color"];
+          break;
+
+        case "fill-extrusion":
+          capa.paint["fill-extrusion-color"] = tema.edificios;
+          delete capa.paint["fill-extrusion-pattern"];
+          break;
+
+        case "line":
+          if (FUENTES_OCULTAS.includes(fuente)) {
+            capa.layout.visibility = "none";
+          } else if (fuente === "transportation") {
+            capa.paint["line-color"] = id.includes("casing") ? tema.callesBorde : tema.calles;
+          } else if (fuente === "water" || fuente === "waterway") {
+            capa.paint["line-color"] = tema.agua;
+          } else {
+            capa.paint["line-color"] = tema.edificios;
+          }
+          break;
+
+        case "symbol": {
+          if (FUENTES_OCULTAS.includes(fuente)) {
+            capa.layout.visibility = "none";
+            break;
+          }
+          const esCalle = fuente === "transportation_name";
+          capa.paint["text-color"] = esCalle ? tema.texto : tema.textoSuave;
+          capa.paint["text-halo-color"] = esCalle ? tema.calles : tema.fondo;
+          capa.paint["text-halo-width"] = 1.2;
+          capa.paint["icon-opacity"] = 0;
+          break;
+        }
+
+        default:
+          // raster, hillshade, heatmap, circle...: no hacen falta.
+          capa.layout.visibility = "none";
+      }
+    }
+
+    return estilo;
+  }
+
+  function mostrarRespaldo(contenedor: HTMLElement) {
+    contenedor.innerHTML = `
+      <div class="mapa-respaldo">
+        <p>No pudimos cargar el mapa.</p>
+        <a href="${COMO_LLEGAR_URL}" target="_blank" rel="noopener noreferrer">
+          Ver ubicación en Google Maps ↗
+        </a>
+      </div>
+    `;
+  }
+
+  // Pin SVG. No lleva ningún transform en el elemento raíz porque MapLibre
+  // usa ese transform para posicionar el marcador.
+  function crearMarcador() {
+    const marcador = document.createElement("div");
+    marcador.className = "marcador-iglesia";
+    marcador.innerHTML = `
+      <svg width="48" height="${ALTURA_PIN}" viewBox="0 0 48 ${ALTURA_PIN}" fill="none" aria-hidden="true">
+        <path
+          class="marcador-forma"
+          d="M24 2C12.4 2 3 11.4 3 23c0 15.5 21 34 21 34s21-18.5 21-34C45 11.4 35.6 2 24 2z"
+          stroke-width="2.5"
+        />
+        <g
+          class="marcador-icono"
+          transform="translate(12 11)"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 3v18" />
+          <path d="M5 9h14" />
+          <path d="M5 21V9l7-5 7 5v12" />
+        </g>
+      </svg>
+    `;
+    return marcador;
+  }
+
+  let limpiar: (() => void) | null = null;
+
+  async function crearMapa(contenedor: HTMLElement) {
+    const esquema = window.matchMedia("(prefers-color-scheme: dark)");
+    const temaActual = () => TEMAS[esquema.matches ? "oscuro" : "claro"];
+
+    let base;
+    try {
+      base = await obtenerEstiloBase();
+    } catch (error) {
+      console.error("[Mapa] No se pudo cargar el estilo del mapa:", error);
+      mostrarRespaldo(contenedor);
+      return;
+    }
+
+    // Si la persona navegó a otra página mientras cargaba el estilo.
+    if (!contenedor.isConnected) return;
+
+    const mapa = new maplibregl.Map({
+      container: contenedor,
+      style: aplicarTema(base, temaActual()),
+      center: [UBICACION.lng, UBICACION.lat],
+      zoom: 16,
+      pitch: 0,
+      bearing: 0,
+      attributionControl: false,
+      // Evita que el mapa "secuestre" el scroll de la página.
+      cooperativeGestures: true,
+      locale: {
+        "CooperativeGesturesHandler.WindowsHelpText": "Usa Ctrl + scroll para hacer zoom en el mapa",
+        "CooperativeGesturesHandler.MacHelpText": "Usa ⌘ + scroll para hacer zoom en el mapa",
+        "CooperativeGesturesHandler.MobileHelpText": "Usa dos dedos para mover el mapa",
+        "NavigationControl.ZoomIn": "Acercar",
+        "NavigationControl.ZoomOut": "Alejar",
+      },
+    });
+
+    mapa.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
+    mapa.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-left");
+
+    const popup = new maplibregl.Popup({
+      offset: OFFSET_POPUP as any,
+      closeButton: false,
+      maxWidth: "260px",
+      className: "popup-cristo-viene",
+    }).setHTML(`
+      <div class="popup-contenido">
+        <strong>Iglesia Cristo Viene</strong>
+        <p>Cartago, Costa Rica</p>
+        <a href="${COMO_LLEGAR_URL}" target="_blank" rel="noopener noreferrer">
+          Cómo llegar ↗
+        </a>
+      </div>
+    `);
+
+    new maplibregl.Marker({ element: crearMarcador(), anchor: "bottom" })
+      .setLngLat([UBICACION.lng, UBICACION.lat])
+      .setPopup(popup)
+      .addTo(mapa);
+
+    // Si cambia el tema del sistema, el mapa cambia de paleta.
+    const alCambiarEsquema = () => mapa.setStyle(aplicarTema(base, temaActual()));
+    esquema.addEventListener("change", alCambiarEsquema);
+
+    // Si cambia el tamaño del contenedor (no solo el de la ventana).
+    const observadorTamano = new ResizeObserver(() => mapa.resize());
+    observadorTamano.observe(contenedor);
+
+    limpiar = () => {
+      observadorTamano.disconnect();
+      esquema.removeEventListener("change", alCambiarEsquema);
+      mapa.remove(); // libera el contexto WebGL
+    };
+  }
+
+  function iniciarMapa() {
+    const contenedor = document.getElementById("mapa-cristo-viene");
+    if (!contenedor || contenedor.dataset.iniciado) return;
+    contenedor.dataset.iniciado = "true";
+
+    // El mapa se crea solo cuando está por entrar en pantalla.
+    const observador = new IntersectionObserver(
+      ([entrada]) => {
+        if (!entrada.isIntersecting) return;
+        observador.disconnect();
+        crearMapa(contenedor);
+      },
+      { rootMargin: "300px" }
+    );
+    observador.observe(contenedor);
+
+    limpiar = () => observador.disconnect();
+  }
+
+  document.addEventListener("astro:page-load", iniciarMapa);
+
+  // Con las view transitions: destruye el mapa antes de cambiar de página.
+  document.addEventListener("astro:before-swap", () => {
+    limpiar?.();
+    limpiar = null;
+  });
+
+  iniciarMapa();
+</script>
+
+<style is:global>
+  .mapa-wrapper {
+    width: 100%;
+    height: 100%;
+    min-height: var(--mapa-alto-min, 400px);
+    border-radius: 20px;
+    overflow: hidden;
+    background: var(--raw-bg-block);
+  }
+
+  #mapa-cristo-viene {
+    width: 100%;
+    height: 100%;
+    min-height: var(--mapa-alto-min, 400px);
+  }
+
+  .mapa-respaldo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 100%;
+    min-height: var(--mapa-alto-min, 400px);
+    color: var(--raw-text-secondary);
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .mapa-respaldo a {
+    color: var(--raw-accent);
+    font-weight: 700;
+  }
+
+  /* Marcador */
+  .mapa-wrapper .marcador-iglesia {
+    cursor: pointer;
+  }
+
+  .mapa-wrapper .marcador-iglesia svg {
+    display: block;
+    overflow: visible;
+    transform-origin: 50% 100%;
+    filter: drop-shadow(0 4px 8px rgb(0 0 0 / 0.4));
+    transition: transform 0.2s ease, filter 0.3s ease;
+  }
+
+  .mapa-wrapper .marcador-iglesia:hover svg {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 14px color-mix(in srgb, var(--raw-accent) 55%, transparent));
+  }
+
+  .mapa-wrapper .marcador-forma {
+    fill: var(--raw-accent);
+    stroke: #ffffff;
+  }
+
+  /* El ícono usa el color de fondo del tema para contrastar con el acento. */
+  .mapa-wrapper .marcador-icono {
+    stroke: var(--raw-bg);
+  }
+
+  /* Popup */
+  .mapa-wrapper .maplibregl-popup-content {
+    background: var(--raw-bg-block-secondary);
+    color: var(--raw-text-primary);
+    border: 1px solid color-mix(in srgb, var(--raw-text-secondary) 40%, transparent);
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
+  }
+
+  /* La flechita del popup según hacia dónde se abra. */
+  .mapa-wrapper .maplibregl-popup-anchor-top .maplibregl-popup-tip,
+  .mapa-wrapper .maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+  .mapa-wrapper .maplibregl-popup-anchor-top-right .maplibregl-popup-tip {
+    border-bottom-color: var(--raw-bg-block-secondary);
+  }
+
+  .mapa-wrapper .maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+  .mapa-wrapper .maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+  .mapa-wrapper .maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+    border-top-color: var(--raw-bg-block-secondary);
+  }
+
+  .mapa-wrapper .maplibregl-popup-anchor-left .maplibregl-popup-tip {
+    border-right-color: var(--raw-bg-block-secondary);
+  }
+
+  .mapa-wrapper .maplibregl-popup-anchor-right .maplibregl-popup-tip {
+    border-left-color: var(--raw-bg-block-secondary);
+  }
+
+  .popup-contenido {
+    font-family: "Aller", Arial, sans-serif;
+  }
+
+  .popup-contenido strong {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .popup-contenido p {
+    font-size: 13px;
+    color: var(--raw-text-secondary);
+    margin: 6px 0 12px;
+  }
+
+  .popup-contenido a {
+    color: var(--raw-accent);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  /* Controles de zoom */
+  .mapa-wrapper .maplibregl-ctrl-group {
+    background: var(--raw-bg-block-secondary);
+    border: 1px solid color-mix(in srgb, var(--raw-text-secondary) 40%, transparent);
+    border-radius: 10px;
+    box-shadow: none;
+    overflow: hidden;
+  }
+
+  .mapa-wrapper .maplibregl-ctrl-group button {
+    background-color: var(--raw-bg-block-secondary);
+  }
+
+  .mapa-wrapper .maplibregl-ctrl-group button + button {
+    border-top: 1px solid color-mix(in srgb, var(--raw-text-secondary) 40%, transparent);
+  }
+
+  .mapa-wrapper .maplibregl-ctrl-group button:hover {
+    background-color: var(--raw-bg-block);
+  }
+
+  /* Atribución (obligatoria por la licencia de OpenStreetMap/OpenFreeMap) */
+  .mapa-wrapper .maplibregl-ctrl-attrib.maplibregl-compact {
+    background: color-mix(in srgb, var(--raw-bg-block-secondary) 85%, transparent);
+    border-radius: 10px;
+  }
+
+  .mapa-wrapper .maplibregl-ctrl-attrib a {
+    color: var(--raw-text-secondary);
+  }
+
+  /* Los íconos de MapLibre son negros: en modo oscuro se invierten. */
+  @media (prefers-color-scheme: dark) {
+    .mapa-wrapper .maplibregl-ctrl-group button .maplibregl-ctrl-icon,
+    .mapa-wrapper .maplibregl-ctrl-attrib-button {
+      filter: invert(1);
+    }
+  }
+</style>

@@ -1,0 +1,22 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Contact from "../components/Contact.astro";
+import Footer from "../components/Footer.astro";
+import BackToTop from "../components/BackToTop.astro";
+import ScrollReveal from "../components/ScrollReveal.astro";
+---
+
+<Layout
+  title="Visítanos — Cristo Viene"
+  description="Horarios de reuniones, dirección, mapa y formulario de contacto de la Iglesia Cristo Viene en Cartago."
+>
+  <Navbar />
+  <!-- pt-16: deja espacio para el navbar, que va sobre el contenido. -->
+  <main class="pt-16">
+    <Contact />
+  </main>
+  <Footer />
+  <BackToTop />
+  <ScrollReveal />
+</Layout>

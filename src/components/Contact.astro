@@ -1,0 +1,336 @@
+---
+import Mapa from "./Mapa.astro";
+import { COMO_LLEGAR_URL } from "../lib/ubicacion";
+
+// ---------------------------------------------------------------------------
+// DATOS EDITABLES
+// ---------------------------------------------------------------------------
+const meetings = [
+  { day: "Sábado", time: "5:30 pm" },
+  { day: "Sábado", time: "7:00 pm" },
+  { day: "Domingo", time: "10:15 am" },
+];
+
+// Los enlaces usan el código de país de Costa Rica (+506).
+const contacts = [
+  { label: "Teléfono", value: "2551-0152", href: "tel:+50625510152", icon: "phone", external: false },
+  { label: "WhatsApp", value: "8361 5562", href: "https://wa.me/50683615562", icon: "whatsapp", external: true },
+  { label: "Correo", value: "info@cristovienecr.com", href: "mailto:info@cristovienecr.com", icon: "mail", external: false },
+];
+
+const addressLines = [
+  "Cartago, Costa Rica. Avenida 2, Calle 6.",
+  "200 metros oeste de la esquina suroeste de Plaza Mayor",
+];
+
+const icons = {
+  phone: `<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>`,
+  whatsapp: `<path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/>`,
+  mail: `<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/>`,
+  arrow: `<path d="M5 12h14M13 6l6 6-6 6"/>`,
+  pin: `<path d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>`,
+} as const;
+
+// Clases compartidas de los campos del formulario.
+// El foco se muestra con UN solo borde de acento (el contorno global de
+// :focus-visible se desactiva para estos campos en el bloque <style> de abajo).
+// Si el campo tiene error, el borde se mantiene rojo aunque esté enfocado.
+const labelClass = "mb-2 block text-small font-medium text-text-primary";
+const inputClass =
+  "w-full rounded-xl border border-transparent bg-bg-block px-4 py-3 text-body text-text-primary placeholder:text-text-secondary/70 transition-colors focus:border-accent aria-invalid:border-red-500 focus:aria-invalid:border-red-500";
+const errorClass = "mt-1.5 min-h-5 text-small text-red-600 dark:text-red-400";
+---
+
+<section id="visitanos" class="px-6 py-20 md:py-28">
+  <div class="mx-auto max-w-5xl">
+    <p class="mb-12 text-center text-eyebrow uppercase tracking-[0.3em] text-text-secondary md:mb-16">
+      Pongámonos en contacto
+    </p>
+
+    <!-- Título + línea de apoyo -->
+    <div data-reveal class="mb-12 grid gap-6 md:mb-14 md:grid-cols-2 md:items-end">
+      <h2 class="max-w-sm text-h2 font-bold text-balance">
+        Nos encantaría <span class="text-accent">conocerte</span>
+      </h2>
+      <p class="max-w-sm text-body text-text-secondary md:justify-self-end">
+        Escríbenos, llámanos o ven a visitarnos. Te responderemos lo antes posible.
+      </p>
+    </div>
+
+    <div class="grid gap-12 md:grid-cols-2 md:gap-14">
+      <!-- Formulario -->
+      <form id="contact-form" novalidate data-reveal class="grid grid-cols-1 gap-x-5 sm:grid-cols-2">
+        <div>
+          <label for="cf-name" class={labelClass}>
+            Nombre <span class="text-accent" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="cf-name"
+            name="name"
+            type="text"
+            autocomplete="name"
+            required
+            maxlength="100"
+            placeholder="Tu nombre"
+            aria-describedby="cf-name-error"
+            class={inputClass}
+          />
+          <p id="cf-name-error" data-error-for="name" class={errorClass}></p>
+        </div>
+
+        <div>
+          <label for="cf-phone" class={labelClass}>Número telefónico</label>
+          <input
+            id="cf-phone"
+            name="phone"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel"
+            maxlength="30"
+            placeholder="8888 8888"
+            aria-describedby="cf-phone-error"
+            class={inputClass}
+          />
+          <p id="cf-phone-error" data-error-for="phone" class={errorClass}></p>
+        </div>
+
+        <div class="sm:col-span-2">
+          <label for="cf-email" class={labelClass}>
+            Correo electrónico <span class="text-accent" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="cf-email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+            maxlength="200"
+            placeholder="tucorreo@ejemplo.com"
+            aria-describedby="cf-email-error"
+            class={inputClass}
+          />
+          <p id="cf-email-error" data-error-for="email" class={errorClass}></p>
+        </div>
+
+        <div class="sm:col-span-2">
+          <label for="cf-message" class={labelClass}>
+            Mensaje <span class="text-accent" aria-hidden="true">*</span>
+          </label>
+          <textarea
+            id="cf-message"
+            name="message"
+            rows="5"
+            required
+            maxlength="2000"
+            placeholder="¿En qué podemos ayudarte?"
+            aria-describedby="cf-message-error"
+            class={`${inputClass} min-h-40 resize-y`}
+          ></textarea>
+          <p id="cf-message-error" data-error-for="message" class={errorClass}></p>
+        </div>
+
+        <!-- Campo trampa para bots: las personas no lo ven ni lo llenan. -->
+        <div class="absolute -left-[9999px]" aria-hidden="true">
+          <label for="cf-website">No llenes este campo</label>
+          <input id="cf-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+        </div>
+
+        <button
+          id="cf-submit"
+          type="submit"
+          class="inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3.5 text-small font-semibold uppercase tracking-wide text-bg transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60 sm:col-span-2"
+        >
+          <span data-submit-label>Enviar mensaje</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={icons.arrow} />
+        </button>
+
+        <p id="cf-status" role="status" aria-live="polite" class="mt-4 min-h-6 text-small sm:col-span-2"></p>
+      </form>
+
+      <!-- Reuniones + contacto -->
+      <div>
+        <div data-reveal>
+          <h3 class="mb-3 text-small font-medium text-text-primary">Reuniones generales</h3>
+          <div class="rounded-block bg-bg-block px-4 py-6">
+            <div class="grid grid-cols-3 divide-x divide-text-secondary/30">
+              {meetings.map((m) => (
+                <div class="px-2 text-center">
+                  <p class="text-eyebrow uppercase tracking-[0.15em] text-text-secondary">{m.day}</p>
+                  <p class="mt-2 text-body-lg font-semibold text-text-primary">{m.time}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div data-reveal class="mt-10">
+          <h3 class="mb-3 text-small font-medium text-text-primary">Contáctanos</h3>
+          <ul class="space-y-1">
+            {contacts.map((c) => (
+              <li>
+                <a
+                  href={c.href}
+                  target={c.external ? "_blank" : undefined}
+                  rel={c.external ? "noopener noreferrer" : undefined}
+                  aria-label={`${c.label}: ${c.value}`}
+                  class="group -ml-2 flex items-center gap-4 rounded-xl p-2 transition-colors hover:bg-bg-block"
+                >
+                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bg-block text-accent transition-colors group-hover:bg-accent group-hover:text-bg">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={icons[c.icon as keyof typeof icons]} />
+                  </span>
+                  <span class="text-body text-text-primary">{c.value}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dirección + mapa -->
+    <div data-reveal class="mt-14 overflow-hidden rounded-block bg-bg-block md:mt-16">
+      <div class="grid md:grid-cols-[1fr_auto_1fr]">
+        <div class="flex flex-col justify-center gap-4 p-8 md:p-10">
+          <h3 class="text-small font-medium text-text-primary">Dirección</h3>
+          <address class="space-y-1 text-body not-italic leading-relaxed text-text-primary">
+            {addressLines.map((line) => <p>{line}</p>)}
+          </address>
+          <a
+            href={COMO_LLEGAR_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex w-fit items-center gap-2 text-small font-semibold text-accent transition-opacity hover:opacity-80"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={icons.pin} />
+            Cómo llegar
+          </a>
+        </div>
+
+        <div class="mx-8 h-px bg-text-secondary/30 md:mx-0 md:my-8 md:h-auto md:w-px" aria-hidden="true"></div>
+
+        <div class="p-4 md:p-6">
+          <Mapa alturaMinima={300} />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /*
+    global.css define un contorno de acento para :focus-visible. Como estos
+    campos ya marcan el foco con su propio borde, ese contorno se veía como un
+    segundo borde. Aquí se quita solo para el formulario: queda un único borde.
+  */
+  #contact-form input:focus-visible,
+  #contact-form textarea:focus-visible {
+    outline: none;
+  }
+</style>
+
+<script>
+  import { sendContactMessage } from "../lib/firebase";
+
+  type FieldName = "name" | "phone" | "email" | "message";
+  const FIELDS: FieldName[] = ["name", "phone", "email", "message"];
+
+  const STATUS_BASE = "mt-4 min-h-6 text-small sm:col-span-2 ";
+  const STATUS_OK = STATUS_BASE + "text-accent";
+  const STATUS_ERROR = STATUS_BASE + "text-red-600 dark:text-red-400";
+
+  function initContactForm() {
+    const formEl = document.getElementById("contact-form") as HTMLFormElement | null;
+    if (!formEl) return;
+
+    const form: HTMLFormElement = formEl;
+    const status = document.getElementById("cf-status") as HTMLElement;
+    const submit = document.getElementById("cf-submit") as HTMLButtonElement;
+    const label = submit.querySelector<HTMLElement>("[data-submit-label]")!;
+
+    const field = (name: FieldName) =>
+      form.elements.namedItem(name) as HTMLInputElement | HTMLTextAreaElement;
+
+    function setError(name: FieldName, message: string) {
+      const input = field(name);
+      const target = form.querySelector<HTMLElement>(`[data-error-for="${name}"]`);
+      if (message) input.setAttribute("aria-invalid", "true");
+      else input.removeAttribute("aria-invalid");
+      if (target) target.textContent = message;
+    }
+
+    function validate() {
+      const values = {
+        name: field("name").value.trim(),
+        phone: field("phone").value.trim(),
+        email: field("email").value.trim(),
+        message: field("message").value.trim(),
+      };
+
+      const errors: Partial<Record<FieldName, string>> = {};
+      if (values.name.length < 2) errors.name = "Escribe tu nombre.";
+      if (values.phone && values.phone.replace(/\D/g, "").length < 8)
+        errors.phone = "Revisa el número (mínimo 8 dígitos).";
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email))
+        errors.email = "Escribe un correo válido.";
+      if (values.message.length < 10)
+        errors.message = "Cuéntanos un poco más (mínimo 10 caracteres).";
+
+      FIELDS.forEach((name) => setError(name, errors[name] ?? ""));
+
+      const firstInvalid = FIELDS.find((name) => errors[name]);
+      if (firstInvalid) field(firstInvalid).focus();
+
+      return { valid: !firstInvalid, values };
+    }
+
+    // El error de un campo se quita en cuanto la persona vuelve a escribir.
+    form.addEventListener("input", (event) => {
+      const target = event.target as HTMLInputElement;
+      if (FIELDS.includes(target.name as FieldName) && target.getAttribute("aria-invalid")) {
+        setError(target.name as FieldName, "");
+      }
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      status.textContent = "";
+
+      const { valid, values } = validate();
+      if (!valid) return;
+
+      // Si el campo trampa tiene contenido es un bot: fingimos éxito y no enviamos nada.
+      const honeypot = (form.elements.namedItem("website") as HTMLInputElement | null)?.value;
+      if (honeypot) {
+        form.reset();
+        status.className = STATUS_OK;
+        status.textContent = "¡Gracias! Recibimos tu mensaje y te contactaremos pronto.";
+        return;
+      }
+
+      submit.disabled = true;
+      label.textContent = "Enviando…";
+
+      try {
+        await sendContactMessage({
+          name: values.name,
+          phone: values.phone,
+          email: values.email,
+          message: values.message,
+        });
+        form.reset();
+        status.className = STATUS_OK;
+        status.textContent = "¡Gracias! Recibimos tu mensaje y te contactaremos pronto.";
+      } catch (error) {
+        console.error("[Contact] No se pudo enviar el mensaje:", error);
+        status.className = STATUS_ERROR;
+        status.textContent =
+          "No pudimos enviar tu mensaje. Inténtalo de nuevo o escríbenos por WhatsApp.";
+      } finally {
+        submit.disabled = false;
+        label.textContent = "Enviar mensaje";
+      }
+    });
+  }
+
+  document.addEventListener("astro:page-load", initContactForm);
+</script>

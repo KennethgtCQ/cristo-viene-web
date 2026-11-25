@@ -8,13 +8,23 @@ import logo from "../images/logo.png";
 // para que funcionen igual desde cualquier página, no solo desde Inicio.
 
 const currentPath = Astro.url.pathname;
-const isHome = currentPath === "/";
 
-const navLinks = [
+interface NavItem {
+  label: string;
+  href: string;
+}
+
+interface NavLink extends NavItem {
+  basePath?: string; // usado para marcar como activo el padre de un submenú
+  submenu?: NavItem[];
+}
+
+const navLinks: NavLink[] = [
   { label: "Inicio", href: "/" },
   {
     label: "Conócenos",
     href: "/#conocenos",
+    basePath: "/conocenos",
     submenu: [
       { label: "Nuestra Historia", href: "/conocenos/historia" },
       { label: "Nuestra Doctrina", href: "/conocenos/doctrina" },
@@ -23,15 +33,25 @@ const navLinks = [
   {
     label: "Ministerios",
     href: "/#ministerios",
+    basePath: "/ministerios",
     submenu: [
       { label: "Nuevas Generaciones", href: "/ministerios/nuevas-generaciones" },
       { label: "Discipulado", href: "/ministerios/discipulado" },
       { label: "Otros", href: "/ministerios/otros" },
     ],
   },
-  { label: "Mensajes", href: "/mensajes" },
-  { label: "Visítanos", href: "/#visitanos" },
+  { label: "Mensajes", href: "/mensajes", basePath: "/mensajes" },
+  { label: "Visítanos", href: "/visitanos", basePath: "/visitanos" },
 ];
+
+// Un link está "activo" si la ruta actual coincide exacto, o si cae dentro
+// de su basePath (también funciona si la URL termina en "/").
+function isActive(link: NavLink) {
+  if (link.basePath) {
+    return currentPath === link.basePath || currentPath.startsWith(link.basePath + "/");
+  }
+  return currentPath === link.href;
+}
 ---
 
 <header class="absolute top-0 left-0 right-0 z-50">
@@ -86,7 +106,7 @@ const navLinks = [
             href={link.href}
             class:list={[
               "text-body transition-colors hover:text-accent",
-              isHome && link.href === "/" ? "text-accent" : "text-text-primary",
+              isActive(link) ? "text-accent" : "text-text-primary",
             ]}
           >
             {link.label}
@@ -162,7 +182,7 @@ const navLinks = [
               href={link.href}
               class:list={[
                 "block py-3 text-body-lg",
-                isHome && link.href === "/" ? "text-accent" : "text-text-primary",
+                isActive(link) ? "text-accent" : "text-text-primary",
               ]}
             >
               {link.label}

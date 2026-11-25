@@ -7,6 +7,8 @@ import {
   orderBy,
   limit,
   Timestamp,
+  addDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -131,4 +133,27 @@ export function formatEventParts(event: ChurchEvent) {
     weekday: WEEKDAYS[event.date.getDay()],
     title: event.title,
   };
+}
+
+export interface ContactMessage {
+  name: string;
+  phone?: string;
+  email: string;
+  message: string;
+}
+
+/** Guarda un mensaje del formulario de contacto en la colección "contactMessages". */
+export async function sendContactMessage(data: ContactMessage): Promise<void> {
+  const app = getFirebaseApp();
+  if (!app) throw new Error("Firebase no está configurado.");
+
+  const { phone, ...rest } = data;
+  const db = getFirestore(app);
+
+  await addDoc(collection(db, "contactMessages"), {
+    ...rest,
+    // Firestore no acepta "undefined", por eso el teléfono solo se guarda si existe.
+    ...(phone ? { phone } : {}),
+    createdAt: serverTimestamp(),
+  });
 }
