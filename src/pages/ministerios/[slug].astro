@@ -5,6 +5,7 @@ import Footer from "../../components/Footer.astro";
 import BackToTop from "../../components/BackToTop.astro";
 import ScrollReveal from "../../components/ScrollReveal.astro";
 import CtaBanner from "../../components/CtaBanner.astro";
+import { Image } from "astro:assets";
 import type { ImageMetadata } from "astro";
 import { MINISTRIES, type Ministry } from "../../lib/ministerios";
 import nave3Negro from "../../images/ministerios/NAVE3_Negro.png";
@@ -83,7 +84,7 @@ function splitHighlight(text: string, word?: string) {
             class="pointer-events-none absolute inset-x-0 top-0 h-[85%]"
             style="-webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 30%,#000 65%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0%,#000 30%,#000 65%,transparent 100%);"
           >
-            <img src={ministry.heroImage} alt="" class="h-full w-full object-cover" />
+            <Image src={ministry.heroImage} alt="" width={1600} height={900} priority class="h-full w-full object-cover" />
             <div class="absolute inset-0 bg-bg/60"></div>
           </div>
         )}
@@ -109,9 +110,9 @@ function splitHighlight(text: string, word?: string) {
                 <div class="page-brand-list" aria-label={`Logos de ${ministry.title}`}>
                   {subMinistries.map((s, i) => subMinistryLogos[s.slug] && (
                     <div class="page-brand" data-brand={s.slug} hidden={i !== 0}>
-                      <img src={subMinistryLogos[s.slug].black.src} alt={`Logo de ${s.name}`} class="brand-variant brand-black" />
-                      <img src={subMinistryLogos[s.slug].white.src} alt="" aria-hidden="true" class="brand-variant brand-white" />
-                      <img src={subMinistryLogos[s.slug].color.src} alt="" aria-hidden="true" class="brand-variant brand-color" />
+                      <Image src={subMinistryLogos[s.slug].black} alt={`Logo de ${s.name}`} width={480} loading="lazy" class="brand-variant brand-black" />
+                      <Image src={subMinistryLogos[s.slug].white} alt="" aria-hidden="true" width={480} loading="lazy" class="brand-variant brand-white" />
+                      <Image src={subMinistryLogos[s.slug].color} alt="" aria-hidden="true" width={480} loading="lazy" class="brand-variant brand-color" />
                     </div>
                   ))}
                 </div>
@@ -170,10 +171,12 @@ function splitHighlight(text: string, word?: string) {
                   <div class="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1fr)_minmax(150px,26%)] md:items-start">
                     <div class="relative">
                       {s.image ? (
-                        <img
+                        <Image
                           src={s.image}
                           alt={s.name}
                           loading="lazy"
+                          width={1200}
+                          height={600}
                           class="aspect-[2/1] w-full rounded-xl object-cover"
                         />
                       ) : (

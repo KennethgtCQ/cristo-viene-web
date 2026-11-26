@@ -1,4 +1,7 @@
 ---
+import { Image } from "astro:assets";
+import artworkPlaceholder from "../images/logo_negro.png";
+
 // Reproductor de SoundCloud 100% personalizado.
 //
 // El iframe de SoundCloud sigue existiendo (es la única forma de reproducir
@@ -40,10 +43,12 @@ const { url, title, thumbnail, variant = "track", id } = Astro.props;
 
   <div class="flex items-center gap-4 p-5">
     <div class="relative h-32 w-32 shrink-0 overflow-hidden rounded-xl bg-bg-block">
-      <img
+      <Image
         data-sc-artwork
-        src={thumbnail}
+        src={thumbnail ?? artworkPlaceholder}
         alt=""
+        width={256}
+        height={256}
         class:list={["h-full w-full object-cover", !thumbnail && "hidden"]}
       />
     </div>
@@ -175,6 +180,8 @@ const { url, title, thumbnail, variant = "track", id } = Astro.props;
         widget.getCurrentSound((sound: any) => {
           if (sound?.title && titleEl) titleEl.textContent = sound.title;
           if (sound?.artwork_url && artworkEl) {
+            artworkEl.removeAttribute("srcset");
+            artworkEl.removeAttribute("sizes");
             artworkEl.src = sound.artwork_url.replace("-large", "-t200x200");
             artworkEl.classList.remove("hidden");
           }
@@ -228,6 +235,8 @@ const { url, title, thumbnail, variant = "track", id } = Astro.props;
         widget.getCurrentSound((sound: any) => {
           if (sound?.title && titleEl) titleEl.textContent = sound.title;
           if (sound?.artwork_url && artworkEl) {
+            artworkEl.removeAttribute("srcset");
+            artworkEl.removeAttribute("sizes");
             artworkEl.src = sound.artwork_url.replace("-large", "-t200x200");
             artworkEl.classList.remove("hidden");
           }

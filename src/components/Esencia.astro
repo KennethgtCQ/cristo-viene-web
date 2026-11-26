@@ -1,5 +1,9 @@
 ---
+import { Image } from "astro:assets";
 import CardShape from "../images/card.svg";
+import feImage from "../images/fe.jpg";
+import relacionImage from "../images/relacion.avif";
+import equipoImage from "../images/equipo.avif";
 const cards = [
   {
     key: "fe",
@@ -9,7 +13,7 @@ const cards = [
     color: "var(--color-card-fe)",
     svgColor: "#9D5959", // Color específico para el SVG
     align: "up",
-    img: "/src/images/fe.jpg",
+    img: feImage,
     icon: '<path d="M12 3v18M6 8h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
   },
   {
@@ -20,7 +24,7 @@ const cards = [
     color: "var(--color-card-relacion)",
     svgColor: "#C28458", // Color específico para el SVG
     align: "down",
-    img: "/src/images/relacion.avif",
+    img: relacionImage,
     icon: '<path d="M12 20s-7-4.35-9.3-8.6C1.2 8.4 2.9 5.5 6 5c2-.3 3.6.9 6 3.3C14.4 5.9 16 4.7 18 5c3.1.5 4.8 3.4 3.3 6.4C19 15.65 12 20 12 20z" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linejoin="round"/>',
   },
   {
@@ -31,7 +35,7 @@ const cards = [
     color: "var(--color-card-equipo)",
     svgColor: "#4C69B3", // Color específico para el SVG
     align: "up",
-    img: "/src/images/equipo.avif",
+    img: equipoImage,
     icon: '<circle cx="8" cy="9" r="2.6" stroke="currentColor" stroke-width="1.4" fill="none"/><circle cx="16" cy="9" r="2.6" stroke="currentColor" stroke-width="1.4" fill="none"/><path d="M3 19c0-2.8 2.3-4.6 5-4.6s5 1.8 5 4.6M11 19c0-2.8 2.3-4.6 5-4.6s5 1.8 5 4.6" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/>',
   },
 ];
@@ -56,13 +60,13 @@ const cards = [
           <div class="essence-card relative aspect-[2/3] w-full overflow-hidden rounded-[1rem] bg-white">
             
             <!-- 1. IMAGEN DE FONDO (Visible en la zona superior derecha) -->
-            <img
+            <Image
               src={card.img}
               alt={card.title}
               loading="lazy"
               class="absolute inset-0 h-full w-full object-cover"
-              width="500"
-              height="500"
+              widths={[320, 500, 700]}
+              sizes="(min-width: 768px) 33vw, 100vw"
             />
 
             <!-- 2. FORMA SVG ORIGINAL (Ocupa todo el alto, respeta la curva) -->

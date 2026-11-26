@@ -2,12 +2,15 @@
 // Dato con botón para copiarlo al portapapeles (cuentas, IBAN, etc.).
 interface Props {
   label: string;
+  /** Lo que se muestra en pantalla. */
   value: string;
+  /** Lo que se copia, si es distinto de lo que se muestra (ej. número sin espacios). */
+  copyValue?: string;
   /** Texto para lectores de pantalla: "Copiar {copyLabel}". */
   copyLabel?: string;
 }
 
-const { label, value, copyLabel = label } = Astro.props;
+const { label, value, copyValue, copyLabel = label } = Astro.props;
 ---
 
 <div class="flex items-center justify-between gap-3 rounded-xl bg-bg-block-secondary px-4 py-3">
@@ -18,7 +21,7 @@ const { label, value, copyLabel = label } = Astro.props;
 
   <button
     type="button"
-    data-copy={value}
+    data-copy={copyValue ?? value}
     data-copy-label={copyLabel}
     aria-label={`Copiar ${copyLabel}`}
     class="copy-btn flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-bg-block hover:text-accent"

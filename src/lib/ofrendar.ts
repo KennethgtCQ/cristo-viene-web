@@ -45,6 +45,15 @@ export const BANK = {
   ] satisfies BankAccount[],
 };
 
+export const SINPE = {
+  /** TODO: escribe aquí el número de SINPE Móvil (8 dígitos). Ej.: "8888 8888". */
+  number: "83615562",
+  /** Opcional: nombre de la cuenta a la que llega (el banco lo muestra antes de enviar). */
+  holder: "Asociación cristiana Cristo Viene de Cartago",
+  /** Opcional: detalle sugerido para el envío. Déjalo vacío ("") si no quieres mostrarlo. */
+  detail: "OFRENDA",
+};
+
 export interface Initiative {
   name: string;
   /** TODO: reemplaza "Por definir." con la descripción real. */

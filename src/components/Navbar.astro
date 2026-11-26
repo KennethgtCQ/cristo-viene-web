@@ -1,4 +1,5 @@
 ---
+import { Image } from "astro:assets";
 import logoNegro from "../images/logo_negro.png";
 import logoBlanco from "../images/logo_blanco.png";
 // Navbar como componente independiente, con submenús (dropdown en desktop,
@@ -62,10 +63,10 @@ const isOfrendarActive = currentPath === "/ofrendar" || currentPath.startsWith("
     class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-6 md:px-10 md:py-8"
   >
     <a href="/" class="flex items-center gap-2 shrink-0" aria-label="Cristo Viene - Inicio">
-      <picture>
-        <source srcset={logoBlanco.src} media="(prefers-color-scheme: dark)" />
-        <img src={logoNegro.src} alt="Logo de Cristo Viene" class="h-22 w-auto" />
-      </picture>
+      <span class="brand-mark grid" aria-hidden="true">
+        <Image src={logoNegro} alt="" width={440} priority class="brand-logo-image brand-dark-image h-22 w-auto" />
+        <Image src={logoBlanco} alt="" width={440} loading="eager" class="brand-logo-image brand-light-image h-22 w-auto" />
+      </span>
     </a>
 
     <!-- Nav desktop -->
@@ -239,3 +240,13 @@ const isOfrendarActive = currentPath === "/ofrendar" || currentPath.startsWith("
 
   document.addEventListener("astro:page-load", initNavbar);
 </script>
+
+<style>
+  .brand-logo-image { grid-area: 1 / 1; }
+  .brand-light-image { display: none; }
+
+  @media (prefers-color-scheme: dark) {
+    .brand-dark-image { display: none; }
+    .brand-light-image { display: block; }
+  }
+</style>

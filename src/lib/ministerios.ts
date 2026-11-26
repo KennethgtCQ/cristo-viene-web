@@ -79,10 +79,70 @@ export const MINISTRIES: Ministry[] = [
     color: "var(--color-accent)",
     heroImage: "",
     subMinistries: [
-      sub("nave-3", "Nave 3", "rocket"),
-      sub("ruta-1", "Ruta 1", "route"),
-      sub("muelle-7", "Muelle 7", "anchor"),
-      sub("magma", "Magma", "flame"),
+      sub("nave-3", "Nave 3", "rocket", {
+        enfoque: [
+          "Trabaja con niños de 1 año y medio a 9 años.  ",
+          "Programas que cubren las necesidades de los niños en cinco áreas: social, emocional, física, intelectual y espiritual, basados en verdades bíblicas.",
+          "Sala de cuna y lactancia, que está habilitada para que la madre encargada pueda estar con su hijo",
+        ],
+        reuniones: [
+          "Durante las reuniones generales de sábado y domingo",
+          "Campamento anual",
+          "Escuela Bíblica de Vacaciones",
+        ],
+        queHacemos: [
+          "Plan de estudio bíblico: Generaciones de Gracia",
+          "Juegos y actividades con enfoque en el desarrollo integral del niño",
+          "Desarrollo de pensamiento centrado en la Palabra de Dios",
+        ],
+      }),
+      sub("ruta-1", "Ruta 1", "route", {
+        enfoque: [
+          "Trabaja con preadolescentes de 10 a 12 años.",
+          "Ambiente seguro",
+          "Desarrollo de pensamiento centrado en la Palabra de Dios",
+        ],
+        reuniones: [
+          "Se imparten semanalmente durante las reuniones generales.",
+          "La clase inicia al terminar el tiempo de alabanza.",
+          "Actividades generales cada dos meses para que los preadolescentes compartan y traigan amigos.",
+        ],
+        queHacemos: [
+          "PENDIENTE",
+          "PENDIENTE",
+          "PENDIENTE",
+        ],
+      }),
+      sub("muelle-7", "Muelle 7", "anchor", {
+        enfoque: [
+          "Dirigido a adolescentes de 13 a 17 años.",
+          "Formación de carácter y liderazgo.",
+          "Desarrollo de pensamiento centrado en la Palabra de Dios",
+        ],
+        reuniones: [
+          "Sábados a las 3:00pm en el templo",
+        ],
+        queHacemos: [
+          "PENDIENTE",
+          "PENDIENTE",
+          "PENDIENTE",
+        ],
+      }),
+      sub("magma", "Magma", "flame", {
+        enfoque: [
+          "Orientado a jóvenes de 18 a 25 años.",
+        ],
+        reuniones: [
+          "Viernes a las 7:00pm en el templo.",
+          "Sesiones privadas",
+          "Reuniones grupales",
+        ],
+        queHacemos: [
+          "Estudio de la biblia y de la vida cristiana",
+          "Conversaciones y actividades de crecimiento espiritual",
+          "Competencias sanas para alimentarse de la Palabra de Dios y compartirla con otros",
+        ],
+      }),
     ],
   },
   {
@@ -109,9 +169,58 @@ export const MINISTRIES: Ministry[] = [
           "Desarrollo de pensamiento centrado en la Palabra de Dios",
         ],
       }),
-      sub("mujeres", "Mujeres", "userFemale"),
-      sub("matrimonios", "Matrimonios", "rings"),
-      sub("prematrimonial", "Prematrimonial", "heart"),
+      sub("mujeres", "Mujeres", "userFemale",{
+        enfoque: [
+          "Estudio de la biblia",
+          "Ambiente seguro",
+          "Desarrollo de pensamiento centrado en la Palabra de Dios",
+        ],
+        reuniones: [
+          "Martes 7:00 pm virtual (vía Zoom)",
+          "Sesiones privadas",
+          "Reuniones grupales",
+        ],
+        queHacemos: [
+          "Estudio de la biblia",
+          "Ambiente seguro",
+          "Desarrollo de pensamiento centrado en la Palabra de Dios",
+        ],
+      }),
+      sub("matrimonios", "Matrimonios", "rings",
+        {
+        enfoque: [
+          "Fortalecer el vínculo del matrimonio con Dios.",
+          "Fortalecer el vínculo del matrimonio entre esposo y esposa.",
+          "Fortalecer el vínculo del matrimonio con otros matrimonios.",
+        ],
+        reuniones: [
+          "Semanalmente grupos pequeños de matrimonios se reúnen en casas. Charlas y actividades abiertas a todo la congregación.",
+          "Sesiones privadas",
+          "Reuniones grupales",
+        ],
+        queHacemos: [
+          "Estudio de la biblia",
+          "Ambiente seguro",
+          "Desarrollo de pensamiento centrado en la Palabra de Dios",
+        ],
+      }),
+      sub("prematrimonial", "Prematrimonial", "heart", {
+        enfoque: [
+          "Estudio de la biblia",
+          "Ambiente seguro",
+          "Desarrollo de pensamiento centrado en la Palabra de Dios",
+        ],
+        reuniones: [
+          "Martes 7:00 pm virtual (vía Zoom)",
+          "Sesiones privadas",
+          "Reuniones grupales",
+        ],
+        queHacemos: [
+          "Estudio de la biblia",
+          "Ambiente seguro",
+          "Desarrollo de pensamiento centrado en la Palabra de Dios",
+        ],
+      }),
     ],
   },
   {
@@ -121,6 +230,22 @@ export const MINISTRIES: Ministry[] = [
       "Diversos ministerios de servicio, oración y alcance donde cada persona puede poner sus dones al servicio de los demás.",
     color: "var(--color-accent)",
     heroImage: "",
-    subMinistries: [sub("huellas", "Huellas", "footprints")],
+    subMinistries: [sub("huellas", "Huellas", "footprints",{
+        enfoque: [
+          "Es el ministerio para adultos de más de 60 años.",
+          "Queremos que muchos adultos mayores lleguen también a disfrutar de ese placer de vivir una relación con Dios y con los hermanos en la fe.",
+          "Desarrollo de pensamiento centrado en la Palabra de Dios",
+        ],
+        reuniones: [
+          "El ministerio tiene su reunión mensual el tercer sábado de cada mes.",
+          "Semanalmente tienen el Taller de la memoria, los martes a las 2pm.",
+          "Grupos de discipulado los martes a las 3:30pm.",
+        ],
+        queHacemos: [
+          "Estudio de la biblia",
+          "Actividades de recreación y esparcimiento",
+          "Compartir experiencias de vida y de fe",
+        ],
+      })],
   },
 ];

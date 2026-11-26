@@ -1,4 +1,6 @@
 ---
+import { Image } from "astro:assets";
+
 // Reemplaza cada "src" por la ruta de tu foto (ej. "/images/galeria-1.jpg",
 // guardada en /public/images). Si "src" está vacío se muestra un relleno.
 // Las alturas de las cards se configuran en HEIGHT_WAVE (en el script de abajo).
@@ -29,11 +31,12 @@ const images = [
         class="overflow-hidden rounded-2xl bg-bg-block-secondary"
       >
         {img.src ? (
-          <img
+          <Image
             src={img.src}
             alt={img.alt}
             loading="eager"
-            decoding="async"
+            width={640}
+            height={1008}
             draggable="false"
             class="h-full w-full object-cover"
           />

@@ -2,6 +2,7 @@
 // Dispatcher: YouTube conserva su reproductor nativo (clic para
 // incrustar), como ya lo tenías. SoundCloud ahora usa nuestro reproductor
 // 100% personalizado (SoundCloudPlayer.astro) en vez del widget nativo.
+import { Image } from "astro:assets";
 import type { MediaProvider } from "../lib/messages";
 import SoundCloudPlayer from "./SoundCloudPlayer.astro";
 
@@ -28,10 +29,12 @@ const { provider, youtubeId, soundcloudUrl, thumbnail, title, id } = Astro.props
     class="relative aspect-video overflow-hidden rounded-card bg-bg-block-secondary"
   >
     {youtubeId ? (
-      <img
+      <Image
         src={`https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`}
         alt={title}
         loading="lazy"
+        width={480}
+        height={360}
         class="h-full w-full object-cover"
       />
     ) : (

@@ -1,4 +1,6 @@
 ---
+import { Image } from "astro:assets";
+
 // Foto de una persona del equipo. Si no hay "src" muestra un recuadro con una
 // silueta. Para el zoom al pasar el mouse, el contenedor padre debe tener la
 // clase "group".
@@ -13,11 +15,12 @@ const { src, alt, class: className } = Astro.props;
 
 <div class:list={["relative overflow-hidden bg-bg-block-secondary", className]}>
   {src ? (
-    <img
+    <Image
       src={src}
       alt={alt}
       loading="lazy"
-      decoding="async"
+      width={800}
+      height={1000}
       class="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
     />
   ) : (

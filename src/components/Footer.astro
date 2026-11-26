@@ -1,4 +1,5 @@
 ---
+import { Image } from "astro:assets";
 import logoNegro from "../images/logo_negro.png";
 import logoBlanco from "../images/logo_blanco.png";
 
@@ -31,10 +32,10 @@ const columns = [
     <div class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr] gap-10 md:gap-8">
       <div>
         <div class="flex items-center gap-2 mb-4">
-          <picture>
-            <source srcset={logoBlanco.src} media="(prefers-color-scheme: dark)" />
-            <img src={logoNegro.src} alt="Cristo Viene" class="h-26 w-auto" />
-          </picture>
+          <span class="brand-mark grid" role="img" aria-label="Cristo Viene">
+            <Image src={logoNegro} alt="" aria-hidden="true" width={440} loading="lazy" class="brand-logo-image brand-dark-image h-26 w-auto" />
+            <Image src={logoBlanco} alt="" aria-hidden="true" width={440} loading="lazy" class="brand-logo-image brand-light-image h-26 w-auto" />
+          </span>
         </div>
         <p class="text-body text-text-secondary max-w-xs">
           Trabajamos para dar a conocer a Jesús y enseñar la vida que Él quiere que vivamos.
@@ -63,3 +64,13 @@ const columns = [
     </div>
   </div>
 </footer>
+
+<style>
+  .brand-logo-image { grid-area: 1 / 1; }
+  .brand-light-image { display: none; }
+
+  @media (prefers-color-scheme: dark) {
+    .brand-dark-image { display: none; }
+    .brand-light-image { display: block; }
+  }
+</style>
