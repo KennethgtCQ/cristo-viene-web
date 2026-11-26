@@ -5,7 +5,39 @@ import Footer from "../../components/Footer.astro";
 import BackToTop from "../../components/BackToTop.astro";
 import ScrollReveal from "../../components/ScrollReveal.astro";
 import CtaBanner from "../../components/CtaBanner.astro";
-import { MINISTRIES, ministryIcons, type Ministry } from "../../lib/ministerios";
+import type { ImageMetadata } from "astro";
+import { MINISTRIES, type Ministry } from "../../lib/ministerios";
+import nave3Negro from "../../images/ministerios/normalized/NAVE3_Negro.png";
+import nave3Blanco from "../../images/ministerios/normalized/NAVE3_Blanco.png";
+import nave3Color from "../../images/ministerios/normalized/NAVE3_Colorpng.png";
+import ruta1Negro from "../../images/ministerios/normalized/Ruta1_Negro.png";
+import ruta1Blanco from "../../images/ministerios/normalized/Ruta1_Blanco.png";
+import ruta1Color from "../../images/ministerios/normalized/Ruta1_Color.png";
+import muelle7Negro from "../../images/ministerios/normalized/MUELLE7_Negro.png";
+import muelle7Blanco from "../../images/ministerios/normalized/MUELLE7_Blanco.png";
+import muelle7Color from "../../images/ministerios/normalized/MUELLE7_Color.png";
+import magmaNegro from "../../images/ministerios/normalized/Magma_Negro.png";
+import magmaBlanco from "../../images/ministerios/normalized/Magma_Blanco.png";
+import magmaColor from "../../images/ministerios/normalized/Magma_Color.png";
+import huellasNegro from "../../images/discipulados/normalized/Huellas de Oro_Negro.png";
+import huellasBlanco from "../../images/discipulados/normalized/Huellas de Oro_Blanco.png";
+import huellasColor from "../../images/discipulados/normalized/Huellas de Oro_Color.png";
+import vinculoNegro from "../../images/discipulados/normalized/VínculodeMatrimonios_Negro.png";
+import vinculoBlanco from "../../images/discipulados/normalized/VínculodeMatrimonios_Blanco.png";
+import vinculoColor from "../../images/discipulados/normalized/VinculodeMatrimonios_Color.png";
+import prematrimonialNegro from "../../images/discipulados/normalized/Prematrimonial_Negro.png";
+import prematrimonialBlanco from "../../images/discipulados/normalized/Prematrimonial_Blanco.png";
+import prematrimonialColor from "../../images/discipulados/normalized/Prematrimonial_Color.png";
+
+const subMinistryLogos: Record<string, { black: ImageMetadata; white: ImageMetadata; color: ImageMetadata }> = {
+  "nave-3": { black: nave3Negro, white: nave3Blanco, color: nave3Color },
+  "ruta-1": { black: ruta1Negro, white: ruta1Blanco, color: ruta1Color },
+  "muelle-7": { black: muelle7Negro, white: muelle7Blanco, color: muelle7Color },
+  magma: { black: magmaNegro, white: magmaBlanco, color: magmaColor },
+  huellas: { black: huellasNegro, white: huellasBlanco, color: huellasColor },
+  matrimonios: { black: vinculoNegro, white: vinculoBlanco, color: vinculoColor },
+  prematrimonial: { black: prematrimonialNegro, white: prematrimonialBlanco, color: prematrimonialColor },
+};
 
 // Una página estática por cada ministerio definido en src/lib/ministerios.ts
 export function getStaticPaths() {
@@ -71,7 +103,20 @@ function splitHighlight(text: string, word?: string) {
             <p class="m-text mb-3 text-eyebrow uppercase tracking-[0.25em]">
               Nuestros ministerios
             </p>
-            <h1 class="text-hero font-bold text-balance">{ministry.title}</h1>
+            <div class="ministry-title-row">
+              <h1 class="text-hero font-bold text-balance">{ministry.title}</h1>
+              {subMinistries.some((s) => subMinistryLogos[s.slug]) && (
+                <div class="page-brand-list" aria-label={`Logos de ${ministry.title}`}>
+                  {subMinistries.map((s, i) => subMinistryLogos[s.slug] && (
+                    <div class="page-brand" data-brand={s.slug} hidden={i !== 0}>
+                      <img src={subMinistryLogos[s.slug].black.src} alt={`Logo de ${s.name}`} class="brand-variant brand-black" />
+                      <img src={subMinistryLogos[s.slug].white.src} alt="" aria-hidden="true" class="brand-variant brand-white" />
+                      <img src={subMinistryLogos[s.slug].color.src} alt="" aria-hidden="true" class="brand-variant brand-color" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             <p class="mt-4 max-w-sm text-body text-text-secondary">{ministry.subtitle}</p>
           </div>
         </div>
@@ -96,25 +141,9 @@ function splitHighlight(text: string, word?: string) {
                   aria-selected={i === 0 ? "true" : "false"}
                   data-tab={s.slug}
                   data-active={i === 0 ? "true" : "false"}
-                  class="flex flex-col items-center gap-2"
+                  class="ministry-tab border-b-2 border-transparent pb-2 text-small text-text-primary transition-colors"
                 >
-                  <span class="tab-circle flex h-16 w-16 items-center justify-center rounded-full bg-bg-block-secondary text-text-primary transition-colors">
-                    <svg
-                      width="26"
-                      height="26"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      aria-hidden="true"
-                      set:html={ministryIcons[s.icon]}
-                    />
-                  </span>
-                  <span class="tab-label border-b-2 border-transparent pb-0.5 text-small text-text-primary">
-                    {s.name}
-                  </span>
+                  {s.name}
                 </button>
               ))}
             </div>
@@ -232,13 +261,67 @@ function splitHighlight(text: string, word?: string) {
     font-weight: 400;
   }
 
-  [data-tab]:hover .tab-circle,
-  [data-tab][data-active="true"] .tab-circle {
+  [data-tab]:hover,
+  [data-tab][data-active="true"] {
     color: var(--ministry-color);
   }
 
-  [data-tab][data-active="true"] .tab-label {
+  [data-tab][data-active="true"] {
     border-bottom-color: var(--ministry-color);
+  }
+
+  .ministry-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: clamp(1rem, 5vw, 4rem);
+  }
+
+  .ministry-title-row h1 {
+    min-width: 0;
+  }
+
+  .page-brand-list {
+    position: relative;
+    flex: 0 0 clamp(8rem, 22vw, 15rem);
+    height: 6rem;
+  }
+
+  .page-brand {
+    position: relative;
+    display: grid;
+    width: 100%;
+    height: 100%;
+    place-items: center;
+  }
+
+  .page-brand[hidden] { display: none; }
+
+  .brand-variant {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    transition: opacity 250ms ease;
+  }
+
+  .brand-white,
+  .brand-color { opacity: 0; }
+
+  @media (prefers-color-scheme: dark) {
+    .brand-black { opacity: 0; }
+    .brand-white { opacity: 1; }
+  }
+
+  .page-brand:hover .brand-black,
+  .page-brand:hover .brand-white { opacity: 0; }
+
+  .page-brand:hover .brand-color { opacity: 1; }
+
+  @media (max-width: 640px) {
+    .page-brand-list { flex-basis: 7rem; height: 3.5rem; }
   }
 </style>
 
@@ -248,6 +331,7 @@ function splitHighlight(text: string, word?: string) {
   function initMinistryTabs() {
     const panels = Array.from(document.querySelectorAll<HTMLElement>("[data-panel]"));
     if (panels.length === 0) return;
+    const brands = Array.from(document.querySelectorAll<HTMLElement>("[data-brand]"));
 
     const tablist = document.querySelector<HTMLElement>("[data-ministry-tabs]");
     const tabs = tablist
@@ -266,6 +350,10 @@ function splitHighlight(text: string, word?: string) {
             { opacity: 1, y: 0, duration: 0.45, ease: "power3.out", clearProps: "opacity,transform" }
           );
         }
+      });
+
+      brands.forEach((brand) => {
+        brand.hidden = brand.dataset.brand !== slug;
       });
 
       tabs.forEach((tab) => {

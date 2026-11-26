@@ -1,28 +1,36 @@
 ---
-// Para agregar las imágenes (logos) de cada ministerio, pon el archivo en
-// /public/images/ministerios/ y escribe su ruta en "image", por ejemplo:
-//   image: "/images/ministerios/nuevas-generaciones.png"
-// Mientras "image" esté vacío, se muestra un recuadro de relleno para que
-// el layout se vea bien.
+import type { ImageMetadata } from "astro";
+import nuevasGenNegro from "../images/ministerios/NuevasGen_Negro.png";
+import nuevasGenBlanco from "../images/ministerios/NuevasGen_Blanco.png";
+import nuevasGenColor from "../images/ministerios/NuevasGen_Color.png";
+import paso4Negro from "../images/ministerios/Paso4_Negro.png";
+import paso4Blanco from "../images/ministerios/Paso4_Blanco.png";
+import paso4Color from "../images/ministerios/Paso4_Color.png";
+import huellasNegro from "../images/discipulados/Huellas de Oro_Negro.png";
+import huellasBlanco from "../images/discipulados/Huellas de Oro_Blanco.png";
+import huellasColor from "../images/discipulados/Huellas de Oro_Color.png";
+
+const logo = (name: string, black: ImageMetadata, white: ImageMetadata, color: ImageMetadata) => ({ name, black, white, color });
+
 const ministries = [
   {
     title: "Nuevas Generaciones",
     text: "Un espacio pensado para niños y jóvenes, donde aprenden de la Palabra de Dios de forma dinámica y acorde a su edad, mientras crecen en comunidad.",
-    image: "",
+    logos: [logo("Nuevas Generaciones", nuevasGenNegro, nuevasGenBlanco, nuevasGenColor)],
     href: "/ministerios/nuevas-generaciones",
     align: "left",
   },
   {
     title: "Discipulado",
     text: "Acompañamos el crecimiento espiritual de cada persona a través de grupos pequeños, mentorías y estudios bíblicos que fortalecen su caminar con Dios.",
-    image: "",
+    logos: [logo("Paso 4", paso4Negro, paso4Blanco, paso4Color)],
     href: "/ministerios/discipulado",
     align: "right",
   },
   {
     title: "Otros",
     text: "Diversos ministerios de servicio, música, oración y alcance comunitario donde cada persona puede poner sus dones al servicio de los demás.",
-    image: "",
+    logos: [logo("Huellas", huellasNegro, huellasBlanco, huellasColor)],
     href: "/ministerios/otros",
     align: "left",
   },
@@ -42,31 +50,24 @@ const ministries = [
 
     <div class="flex flex-col gap-6">
       {ministries.map((m) => (
-        <div
+        <article
           data-reveal
           class:list={[
-            "w-full md:w-[71%] rounded-block bg-bg-block px-8 py-10 md:px-10 md:py-14",
+            "ministry-card w-full md:w-[71%] rounded-block bg-bg-block px-8 py-10 md:px-10 md:py-14 transition-colors duration-300",
             m.align === "right" ? "md:ml-auto" : "md:mr-auto",
           ]}
         >
-          <div class="grid grid-cols-1 md:grid-cols-[2fr_3fr] items-center gap-6 md:gap-10">
-            <!-- Imagen / logo -->
-            <div class="flex items-center justify-center">
-              {m.image ? (
-                <img
-                  src={m.image}
-                  alt={`Logo de ${m.title}`}
-                  loading="lazy"
-                  class="max-h-24 w-auto max-w-full object-contain"
-                />
-              ) : (
-                <div class="flex h-24 w-full items-center justify-center rounded-xl border border-dashed border-text-secondary/40 text-small text-text-secondary">
-                  Logo
+          <div class="grid grid-cols-1 md:grid-cols-[2fr_3fr] items-center gap-8 md:gap-10">
+            <div class="grid grid-cols-2 items-center justify-items-center gap-x-5 gap-y-6" aria-label={`Logos de ${m.title}`}>
+              {m.logos.map((item) => (
+                <div class:list={["ministry-logo", m.logos.length === 1 ? "col-span-2" : ""]}>
+                  <img src={item.black.src} alt={item.name} loading="lazy" class="logo-variant logo-black" />
+                  <img src={item.white.src} alt="" aria-hidden="true" loading="lazy" class="logo-variant logo-white" />
+                  <img src={item.color.src} alt="" aria-hidden="true" loading="lazy" class="logo-variant logo-color" />
                 </div>
-              )}
+              ))}
             </div>
 
-            <!-- Texto -->
             <div>
               <h3 class="text-h3 mb-3">{m.title}</h3>
               <p class="text-small text-text-primary max-w-xs">{m.text}</p>
@@ -78,8 +79,55 @@ const ministries = [
               </a>
             </div>
           </div>
-        </div>
+        </article>
       ))}
     </div>
   </div>
 </section>
+
+<style>
+  .ministry-logo {
+    position: relative;
+    display: grid;
+    width: 100%;
+    max-width: 11rem;
+    place-items: center;
+    justify-self: center;
+    margin-inline: auto;
+  }
+
+  .logo-variant {
+    grid-area: 1 / 1;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    transform: scale(1.35);
+    transform-origin: center;
+    transition: opacity 250ms ease;
+    
+  }
+
+  .logo-white,
+  .logo-color {
+    opacity: 0;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .logo-black { opacity: 0; }
+    .logo-white { opacity: 1; }
+  }
+
+  .ministry-card:hover .logo-black,
+  .ministry-card:hover .logo-white {
+    opacity: 0;
+  }
+
+  .ministry-card:hover .logo-color {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .logo-variant { transition: none; }
+  }
+</style>
