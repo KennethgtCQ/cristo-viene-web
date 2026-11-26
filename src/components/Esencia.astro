@@ -3,6 +3,7 @@ import CardShape from "../images/card.svg";
 const cards = [
   {
     key: "fe",
+    href: "/conocenos/doctrina",
     title: "FE",
     text: "Creemos en un Dios real que transforma vidas y cumple sus promesas",
     color: "var(--color-card-fe)",
@@ -13,6 +14,7 @@ const cards = [
   },
   {
     key: "relacion",
+    href: "/conocenos/historia",
     title: "RELACIÓN",
     text: "Nuestra relación con Dios se basa en el amor y se fortalece en comunidad.",
     color: "var(--color-card-relacion)",
@@ -23,6 +25,7 @@ const cards = [
   },
   {
     key: "equipo",
+    href: "/equipo",
     title: "EQUIPO",
     text: "Nos damos la mano unos a otros para servir y hacer la diferencia.",
     color: "var(--color-card-equipo)",
@@ -50,37 +53,37 @@ const cards = [
           class:list={["md:mt-0", card.align === "down" && "md:mt-16"]}
         >
           <!-- Tarjeta principal -->
-          <div class="relative aspect-3/5 w-full overflow-hidden rounded-card bg-white">
+          <div class="essence-card relative aspect-[2/3] w-full overflow-hidden rounded-[1rem] bg-white">
             
             <!-- 1. IMAGEN DE FONDO (Visible en la zona superior derecha) -->
             <img
               src={card.img}
               alt={card.title}
               loading="lazy"
-              class="absolute inset-0 w-100 h-150 object-cover"
+              class="absolute inset-0 h-full w-full object-cover"
               width="500"
               height="500"
             />
 
             <!-- 2. FORMA SVG ORIGINAL (Ocupa todo el alto, respeta la curva) -->
-            <CardShape 
-              class="absolute inset-0 w-full h-full object-cover pointer-events-none z-10"
-              style={`fill: ${card.svgColor}; top: 20%;`} 
+            <CardShape
+              class="absolute inset-0 z-10 h-full w-full pointer-events-none"
+              style={`fill: ${card.svgColor};`}
               preserveAspectRatio="none"
             />
 
             <!-- 3. CONTENIDO INFERIOR (Texto y Botón) -->
-            <div class="absolute inset-x-0 bottom-0 top-[46%] z-20 flex flex-col justify-end p-6">
+            <div class="absolute inset-x-0 bottom-0 top-[42%] z-20 flex flex-col justify-end p-5 md:p-6">
               
               <!-- Ícono -->
-              <div class="text-white mb-4">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" set:html={card.icon} />
+              <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-white text-white">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" set:html={card.icon} />
               </div>
               
               <h3 class="text-h3 font-bold text-white mb-2">{card.title}</h3>
               <p class="text-small text-white/85 mb-5 max-w-[85%]">{card.text}</p>
               <a
-                href="#conocenos"
+                href={card.href}
                 class="inline-flex items-center gap-2 text-small font-semibold uppercase tracking-wide text-white group"
               >
                 Conoce más
