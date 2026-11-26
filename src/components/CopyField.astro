@@ -1,0 +1,101 @@
+---
+// Dato con botón para copiarlo al portapapeles (cuentas, IBAN, etc.).
+interface Props {
+  label: string;
+  value: string;
+  /** Texto para lectores de pantalla: "Copiar {copyLabel}". */
+  copyLabel?: string;
+}
+
+const { label, value, copyLabel = label } = Astro.props;
+---
+
+<div class="flex items-center justify-between gap-3 rounded-xl bg-bg-block-secondary px-4 py-3">
+  <div class="min-w-0">
+    <p class="text-eyebrow uppercase tracking-[0.15em] text-text-secondary">{label}</p>
+    <p class="mt-0.5 break-all text-body font-medium tabular-nums text-text-primary">{value}</p>
+  </div>
+
+  <button
+    type="button"
+    data-copy={value}
+    data-copy-label={copyLabel}
+    aria-label={`Copiar ${copyLabel}`}
+    class="copy-btn flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-bg-block hover:text-accent"
+  >
+    <svg data-icon-copy width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="9" y="9" width="12" height="12" rx="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+    <svg data-icon-check class="hidden" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </svg>
+  </button>
+</div>
+
+<style>
+  /* Estado "copiado": gana a las clases de Tailwind por especificidad. */
+  .copy-btn[data-copied="true"] {
+    color: var(--raw-accent);
+  }
+</style>
+
+<script>
+  const timers = new WeakMap<HTMLElement, number>();
+
+  async function copyText(text: string): Promise<boolean> {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Respaldo para contextos donde el portapapeles moderno no está disponible.
+      const area = document.createElement("textarea");
+      area.value = text;
+      area.setAttribute("readonly", "");
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.select();
+      try {
+        return document.execCommand("copy");
+      } finally {
+        area.remove();
+      }
+    }
+  }
+
+  // Un solo listener a nivel de documento: sigue funcionando después de
+  // cada navegación con view transitions, sin volver a registrarse.
+  document.addEventListener("click", async (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-copy]");
+    if (!button) return;
+
+    const ok = await copyText(button.dataset.copy ?? "");
+    const status = document.getElementById("copy-status");
+
+    if (status) {
+      status.textContent = ok
+        ? `Copiado: ${button.dataset.copyLabel ?? ""}`
+        : "No se pudo copiar. Selecciona el texto manualmente.";
+    }
+    if (!ok) return;
+
+    const iconCopy = button.querySelector("[data-icon-copy]");
+    const iconCheck = button.querySelector("[data-icon-check]");
+
+    iconCopy?.classList.add("hidden");
+    iconCheck?.classList.remove("hidden");
+    button.dataset.copied = "true";
+
+    window.clearTimeout(timers.get(button));
+    timers.set(
+      button,
+      window.setTimeout(() => {
+        iconCopy?.classList.remove("hidden");
+        iconCheck?.classList.add("hidden");
+        delete button.dataset.copied;
+        if (status) status.textContent = "";
+      }, 1800)
+    );
+  });
+</script>

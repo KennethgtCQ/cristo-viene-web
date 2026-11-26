@@ -52,6 +52,9 @@ function isActive(link: NavLink) {
   }
   return currentPath === link.href;
 }
+
+// "Ofrendar" va aparte (a la derecha), fuera de navLinks.
+const isOfrendarActive = currentPath === "/ofrendar" || currentPath.startsWith("/ofrendar/");
 ---
 
 <header class="absolute top-0 left-0 right-0 z-50">
@@ -119,7 +122,12 @@ function isActive(link: NavLink) {
     </nav>
 
     <div class="hidden lg:flex items-center gap-7 shrink-0">
-      <a href="/#ofrendar" class="text-body text-text-primary hover:text-accent transition-colors">
+      <a  href="/ofrendar"
+    aria-current={isOfrendarActive ? "page" : undefined}
+    class:list={[
+      "text-body transition-colors hover:text-accent",
+      isOfrendarActive ? "text-accent" : "text-text-primary",
+    ]}>
         Ofrendar
       </a>
       <a href="/#eventos" class="text-body text-text-primary hover:text-accent transition-colors">
