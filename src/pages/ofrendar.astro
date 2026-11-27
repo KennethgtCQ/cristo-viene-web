@@ -191,20 +191,25 @@ const sinpeDisplay =
           </div>
         </article>
 
-        <!-- 02 a 05 -->
-        <div class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <!-- 02 · SINPE Móvil -->
-          <article data-reveal class="flex flex-col rounded-card bg-bg-block p-8">
-            <span class="flex h-14 w-14 items-center justify-center rounded-full bg-bg-block-secondary text-accent">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={icons.sinpe} />
-            </span>
-            <p class="mt-6 text-eyebrow uppercase tracking-[0.25em] text-accent">02</p>
-            <h3 class="mt-1 text-h3 font-bold">SINPE Móvil</h3>
-            <p class="mt-3 text-body text-text-secondary">
-              Envía tu ofrenda desde la app de tu banco usando nuestro número.
-            </p>
+        <!-- 02 · SINPE Móvil: bloque propio para darle espacio al número y sus datos. -->
+        <article data-reveal class="mt-6 rounded-card bg-bg-block p-6 md:p-8">
+          <div class="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(18rem,1.2fr)] md:items-center">
+            <div>
+              <header class="flex items-center gap-4">
+                <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-bg-block-secondary text-accent">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={icons.sinpe} />
+                </span>
+                <div>
+                  <p class="text-eyebrow uppercase tracking-[0.25em] text-accent">02</p>
+                  <h3 class="text-h3 font-bold">SINPE Móvil</h3>
+                </div>
+              </header>
+              <p class="mt-4 text-body text-text-secondary">
+                Envía tu ofrenda desde la app de tu banco usando nuestro número.
+              </p>
+            </div>
 
-            <div class="mt-6 space-y-3">
+            <div class="space-y-3">
               {sinpeDigits ? (
                 <CopyField
                   label="Número"
@@ -228,8 +233,11 @@ const sinpeDisplay =
                 <CopyField label="Detalle" value={SINPE.detail} copyLabel="detalle del envío" />
               )}
             </div>
-          </article>
+          </div>
+        </article>
 
+        <!-- 03 a 05: tres opciones en una fila -->
+        <div class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <!-- 03 · Efectivo -->
           <article data-reveal class="flex flex-col rounded-card bg-bg-block p-8">
             <span class="flex h-14 w-14 items-center justify-center rounded-full bg-bg-block-secondary text-accent">

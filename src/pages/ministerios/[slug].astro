@@ -23,12 +23,12 @@ import magmaColor from "../../images/ministerios/Magma_Color.png";
 import huellasNegro from "../../images/discipulados/Huellas de Oro_Negro.png";
 import huellasBlanco from "../../images/discipulados/Huellas de Oro_Blanco.png";
 import huellasColor from "../../images/discipulados/Huellas de Oro_Color.png";
-import vinculoNegro from "../../images/discipulados/normalized/VínculodeMatrimonios_Negro.png";
-import vinculoBlanco from "../../images/discipulados/normalized/VínculodeMatrimonios_Blanco.png";
-import vinculoColor from "../../images/discipulados/normalized/VinculodeMatrimonios_Color.png";
-import prematrimonialNegro from "../../images/discipulados/normalized/Prematrimonial_Negro.png";
-import prematrimonialBlanco from "../../images/discipulados/normalized/Prematrimonial_Blanco.png";
-import prematrimonialColor from "../../images/discipulados/normalized/Prematrimonial_Color.png";
+import vinculoNegro from "../../images/discipulados/VínculodeMatrimonios_Negro.png";
+import vinculoBlanco from "../../images/discipulados/VínculodeMatrimonios_Blanco.png";
+import vinculoColor from "../../images/discipulados/VinculodeMatrimonios_Color.png";
+import prematrimonialNegro from "../../images/discipulados/Prematrimonial_Negro.png";
+import prematrimonialBlanco from "../../images/discipulados/Prematrimonial_Blanco.png";
+import prematrimonialColor from "../../images/discipulados/Prematrimonial_Color.png";
 
 const subMinistryLogos: Record<string, { black: ImageMetadata; white: ImageMetadata; color: ImageMetadata }> = {
   "nave-3": { black: nave3Negro, white: nave3Blanco, color: nave3Color },
@@ -308,6 +308,17 @@ function splitHighlight(text: string, word?: string) {
     object-fit: contain;
     object-position: center;
     transition: opacity 250ms ease;
+  }
+
+  .page-brand[data-brand="nave-3"] .brand-variant,
+  .page-brand[data-brand="magma"] .brand-variant {
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    width: 250%;
+    height: 250%;
+    max-width: none;
+    transform: translate(-50%, -50%);
   }
 
   .brand-white,
